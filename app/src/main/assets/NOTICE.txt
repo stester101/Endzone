@@ -1,0 +1,1 @@
+Lucide: https://lucide.dev/license (ISC). Twemoji artwork: https://github.com/twitter/twemoji (CC-BY 4.0), Twitter, Inc. and contributors.
