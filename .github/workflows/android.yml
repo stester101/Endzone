@@ -28,8 +28,18 @@ jobs:
         with:
           path: ~/.android/debug.keystore
           key: endzone-development-signing-v1
+      - name: Validate complete app
+        run: node scripts/check-app.cjs
       - name: Build and lint
         run: gradle :app:assembleDebug :app:lintDebug --no-daemon
+      - name: Verify packaged HTML
+        run: |
+          python - <<'PY'
+          import zipfile
+          from pathlib import Path
+          with zipfile.ZipFile('app/build/outputs/apk/debug/app-debug.apk') as apk:
+              assert apk.read('assets/index.html') == Path('app/src/main/assets/index.html').read_bytes()
+          PY
       - name: Name APK
         run: cp app/build/outputs/apk/debug/app-debug.apk Endzone.apk
       - uses: actions/upload-artifact@v4
