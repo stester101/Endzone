@@ -20,11 +20,20 @@ public class MainActivity extends Activity {
   web.getSettings().setAllowFileAccess(false);
   web.getSettings().setAllowContentAccess(false);
   web.setWebViewClient(new WebViewClient(){ @Override public boolean shouldOverrideUrlLoading(WebView v, android.webkit.WebResourceRequest request){ return true; }});
-  setContentView(web);
-  web.setOnApplyWindowInsetsListener((v,insets)->{
-   if(android.os.Build.VERSION.SDK_INT>=30){android.graphics.Insets i=insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout() | WindowInsets.Type.ime());v.setPadding(i.left,i.top,i.right,i.bottom);}
-   return insets;
+  android.widget.FrameLayout container=new android.widget.FrameLayout(this);
+  container.addView(web,new android.widget.FrameLayout.LayoutParams(-1,-1));
+  setContentView(container);
+  container.setOnApplyWindowInsetsListener((v,insets)->{
+   if(android.os.Build.VERSION.SDK_INT>=30){
+    int types=WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout() | WindowInsets.Type.ime();
+    android.graphics.Insets i=insets.getInsets(types);
+    v.setPadding(i.left,i.top,i.right,i.bottom);
+    return new WindowInsets.Builder(insets).setInsets(types,android.graphics.Insets.NONE).build();
+   }
+   v.setPadding(insets.getSystemWindowInsetLeft(),insets.getSystemWindowInsetTop(),insets.getSystemWindowInsetRight(),insets.getSystemWindowInsetBottom());
+   return insets.consumeSystemWindowInsets();
   });
+  container.requestApplyInsets();
   // Inline HTML with a stable HTTPS origin gives localStorage a durable app-local origin.
   try {
    java.io.InputStream stream=getAssets().open("index.html");
