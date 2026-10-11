@@ -51,4 +51,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="android-${{ github.run_number }}"
-          gh release create "$tag" Endzone.apk --target "$GITHUB_SHA" --title "Endzone Android build ${{ github.run_number }}" --notes "Install Endzone.apk on Android. Development build of the approved Games, Bets and Live Feed prototype. Scores/events are demo data; saved bets stay on this device."
+          gh release create "$tag" Endzone.apk --target "$GITHUB_SHA" --title "Endzone Android build ${{ github.run_number }}" --notes "Install Endzone.apk on Android. Development build of the approved Games, Bets and Live Feed prototype. Live ESPN NFL scores and scoring events; saved bets stay on this device."

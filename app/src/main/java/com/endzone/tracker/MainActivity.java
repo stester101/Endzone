@@ -41,10 +41,15 @@ public class MainActivity extends Activity {
    java.io.InputStream icons=getAssets().open("lucide.min.js");
    String js=new String(read(icons),java.nio.charset.StandardCharsets.UTF_8);icons.close();
    html=html.replace("<script src=\"lucide.min.js\"></script>","<script>"+js+"</script>");
+   java.io.InputStream feed=getAssets().open("espn.js");
+   String feedJs=new String(read(feed),java.nio.charset.StandardCharsets.UTF_8);feed.close();
+   html=html.replace("<script src=\"espn.js\"></script>","<script>"+feedJs+"</script>");
    web.loadDataWithBaseURL("https://endzone.local/",html,"text/html","UTF-8",null);
   }catch(java.io.IOException e){throw new IllegalStateException("Cannot load Endzone",e);}
  }
  private byte[] read(java.io.InputStream input) throws java.io.IOException { java.io.ByteArrayOutputStream out=new java.io.ByteArrayOutputStream(); byte[] buffer=new byte[8192]; int count; while((count=input.read(buffer))!=-1)out.write(buffer,0,count); return out.toByteArray(); }
  @Override public void onBackPressed(){web.evaluateJavascript("Boolean(window.endzoneBack && window.endzoneBack())",result->{if(!"true".equals(result))super.onBackPressed();});}
+ @Override protected void onPause(){super.onPause();web.onPause();web.pauseTimers();}
+ @Override protected void onResume(){super.onResume();if(web!=null){web.onResume();web.resumeTimers();web.evaluateJavascript("window.dispatchEvent(new Event('online'))",null);}}
  @Override protected void onDestroy(){web.destroy();super.onDestroy();}
 }

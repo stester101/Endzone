@@ -6,3 +6,10 @@ assert(scripts.length>0,'App script missing');
 scripts.forEach(s=>new vm.Script(s));
 assert(html.includes("data-view=\"feed\""),'Live tab missing');
 console.log('Complete app HTML and JavaScript validated');
+
+new vm.Script(fs.readFileSync('app/src/main/assets/espn.js','utf8'));
+assert(fs.readFileSync('app/src/main/AndroidManifest.xml','utf8').includes('android.permission.INTERNET'),'Internet permission missing');
+assert(fs.readFileSync('app/src/main/java/com/endzone/tracker/MainActivity.java','utf8').includes('getAssets().open("espn.js")'),'Bundled ESPN script loader missing');
+assert(html.includes('EndzoneEspn.load('),'Live feed missing');
+assert(!html.includes("feedStatus='DUMMY DATA"),'Dummy mode still active');
+console.log('Live ESPN integration and Android network configuration validated');
