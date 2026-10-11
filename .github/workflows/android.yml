@@ -26,8 +26,14 @@ jobs:
       - name: Restore development signing key
         uses: actions/cache@v4
         with:
-          path: ~/.android/debug.keystore
-          key: endzone-development-signing-v1
+          path: .signing/endzone-debug.keystore
+          key: endzone-development-signing-v2
+      - name: Ensure persistent development signing key
+        run: |
+          mkdir -p .signing
+          if [ ! -f .signing/endzone-debug.keystore ]; then
+            keytool -genkeypair -keystore .signing/endzone-debug.keystore -storepass android -keypass android -alias androiddebugkey -dname 'CN=Android Debug,O=Android,C=US' -keyalg RSA -keysize 2048 -validity 10000
+          fi
       - name: Validate complete app
         run: node scripts/check-app.cjs
       - name: Build and lint

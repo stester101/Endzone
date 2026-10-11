@@ -2,3 +2,5 @@
 **/build/
 local.properties
 *.jks
+
+.signing/
