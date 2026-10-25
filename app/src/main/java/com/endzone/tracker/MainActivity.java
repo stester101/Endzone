@@ -44,6 +44,9 @@ public class MainActivity extends Activity {
    java.io.InputStream feed=getAssets().open("espn.js");
    String feedJs=new String(read(feed),java.nio.charset.StandardCharsets.UTF_8);feed.close();
    html=html.replace("<script src=\"espn.js\"></script>","<script>"+feedJs+"</script>");
+   java.io.InputStream markets=getAssets().open("markets.js");
+   String marketJs=new String(read(markets),java.nio.charset.StandardCharsets.UTF_8);markets.close();
+   html=html.replace("<script src=\"markets.js\"></script>","<script>"+marketJs+"</script>");
    web.loadDataWithBaseURL("https://endzone.local/",html,"text/html","UTF-8",null);
   }catch(java.io.IOException e){throw new IllegalStateException("Cannot load Endzone",e);}
  }

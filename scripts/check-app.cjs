@@ -13,3 +13,8 @@ assert(fs.readFileSync('app/src/main/java/com/endzone/tracker/MainActivity.java'
 assert(html.includes('EndzoneEspn.load('),'Live feed missing');
 assert(!html.includes("feedStatus='DUMMY DATA"),'Dummy mode still active');
 console.log('Live ESPN integration and Android network configuration validated');
+
+new vm.Script(fs.readFileSync('app/src/main/assets/markets.js','utf8'));
+assert(html.includes('Team scoring markets'));
+assert(html.includes('enterkeyhint=\"done\"'));
+console.log('Team scoring market module and numeric keyboard hints validated');
