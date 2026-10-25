@@ -22,3 +22,5 @@ console.log('Team scoring market module and numeric keyboard hints validated');
 require('./check-markets.cjs');
 
 require('./check-stats.cjs');
+
+require('./check-props.cjs');
