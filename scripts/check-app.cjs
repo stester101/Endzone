@@ -18,3 +18,5 @@ new vm.Script(fs.readFileSync('app/src/main/assets/markets.js','utf8'));
 assert(html.includes('Team scoring markets'));
 assert(html.includes('enterkeyhint=\"done\"'));
 console.log('Team scoring market module and numeric keyboard hints validated');
+
+require('./check-markets.cjs');
