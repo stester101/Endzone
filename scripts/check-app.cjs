@@ -28,3 +28,5 @@ require('./check-props.cjs');
 require('./check-details.cjs');
 
 require("./check-import.cjs");
+
+require("./check-compact.cjs");

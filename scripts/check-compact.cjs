@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const M=require('../app/src/main/assets/markets.js');
+const game={id:'qa',a:'LAR',h:'LV',as:28,hs:6,state:'live',period:3,playerStats:[{side:'away',name:'Test Runner',rushingYards:45}],scoringAvailable:true,scoringPlays:[]};
+const leg={game:'qa',side:'away',market:'playerRushYards',player:{name:'Test Runner'},target:60};
+assert.equal(M.progress(leg,game).cls,'pending');assert.equal(M.progress(leg,game).need,15);assert.equal(M.detail(leg,game).state,'active');assert.equal(M.settle({legs:[leg]},()=>game),'open');
+assert.equal(M.progress(leg,{...game,state:'final'}).cls,'bad');assert.equal(M.progress(leg,{...game,playerStats:[{...game.playerStats[0],rushingYards:60}]}).cls,'good');assert.equal(M.progress(leg,{...game,playerStats:[]}).cls,'future');
+const combo={game:'qa',side:'away',market:'combo',conditions:[leg,{...leg,market:'playerTD',target:1}]};assert.equal(M.progress(combo,game).cls,'pending');assert.equal(M.progress(combo,{...game,playerStats:[]}).cls,'future');
+const periodLeg={game:'qa',side:'away',market:'fgEachHalf'};assert.equal(M.progress(periodLeg,{...game,period:1}).cls,'pending');assert.equal(M.progress(periodLeg,{...game,period:3}).cls,'bad');
+const html=fs.readFileSync('app/src/main/assets/index.html','utf8');const save=html.split('\n').find(l=>l.startsWith('function saveDraft()'));
+function saveCase(stake,system=false){const fields={};const q=s=>fields[s]??=(s==='.stake'?{value:String(stake)}:s==='.odds'?{value:'2'}:s==='.name'?{value:'QA draft'}:s==='.bet-json-input'?{value:'{"draft":"retain-until-saved"}'}:{value:'',textContent:'',hidden:false});q('.bet-json-input');const legs=system?[1,2,3].map(i=>({game:'qa'+i,side:'away',market:'win',odds:2})):[{game:'qa',side:'away',market:'win'}];const env={q,numericValue:v=>String(v).trim()?Number(v):NaN,EndzoneMarkets:M,computedDraftOdds:()=>2,code:()=> 'LAR',game:()=>({...game,state:'upcoming'}),draft:legs,draftName:'QA',nameEdited:true,slipConfig:{mode:system?'system':'single',size:2},bets:[],prefs:{bets:{}},view:'games',render:()=>{},Date,Math};vm.runInNewContext(save+';saveDraft();',env);return{fields,env};}
+let result=saveCase(0);assert.equal(result.env.bets.length,0);assert.equal(result.fields['.bet-json-input'].value,'{"draft":"retain-until-saved"}');
+result=saveCase(1);assert.equal(result.env.bets.length,1);assert.equal(result.fields['.bet-json-input'].value,'');assert.equal(result.fields['.stake'].value,'');assert.equal(result.fields['.odds'].value,'');assert.equal(result.env.draft.length,0);
+result=saveCase(.5,true);assert.equal(result.env.bets.length,3);assert.equal(result.fields['.bet-json-input'].value,'');
+console.log('Reachable targets stay amber, missing data grey, missed deadlines red; JSON clears only after a successful single/system save');
