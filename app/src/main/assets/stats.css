@@ -5,3 +5,5 @@
 @media(max-width:380px){#ez-compact .detail-period{padding:7px}#ez-compact .detail-periodgrid.periods-4{grid-template-columns:repeat(2,minmax(0,1fr))}#ez-compact .detail-value{font-size:11px}#ez-compact .detail-overview h3{font-size:13px}}
 
 #ez-compact .detail-winprob{display:flex;justify-content:space-between;align-items:center;font-size:9px;color:#849789;margin-top:7px}#ez-compact .detail-winprob b{font-size:11px;color:#16845a;font-family:monospace;font-weight:500}
+
+#ez-compact .detail-teamgroups{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:10px;align-items:start}#ez-compact .detail-teamgroups .detail-team{margin:0;min-width:0}#ez-compact .detail-teamgroups{margin-top:9px}
