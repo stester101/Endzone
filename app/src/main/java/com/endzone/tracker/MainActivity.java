@@ -47,6 +47,15 @@ public class MainActivity extends Activity {
    java.io.InputStream markets=getAssets().open("markets.js");
    String marketJs=new String(read(markets),java.nio.charset.StandardCharsets.UTF_8);markets.close();
    html=html.replace("<script src=\"markets.js\"></script>","<script>"+marketJs+"</script>");
+   java.io.InputStream stats=getAssets().open("stats.js");
+   String statsJs=new String(read(stats),java.nio.charset.StandardCharsets.UTF_8);stats.close();
+   html=html.replace("<script src=\"stats.js\"></script>","<script>"+statsJs+"</script>");
+   java.io.InputStream styling=getAssets().open("stats.css");
+   String statsCss=new String(read(styling),java.nio.charset.StandardCharsets.UTF_8);styling.close();
+   html=html.replace("<link rel=\"stylesheet\" href=\"stats.css\">","<style>"+statsCss+"</style>");
+   java.io.InputStream branding=getAssets().open("endzone-wordmark.png");
+   String brandImage=android.util.Base64.encodeToString(read(branding),android.util.Base64.NO_WRAP);branding.close();
+   html=html.replace("src=\"endzone-wordmark.png\"","src=\"data:image/png;base64,"+brandImage+"\"");
    web.loadDataWithBaseURL("https://endzone.local/",html,"text/html","UTF-8",null);
   }catch(java.io.IOException e){throw new IllegalStateException("Cannot load Endzone",e);}
  }
