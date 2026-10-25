@@ -24,3 +24,5 @@ require('./check-markets.cjs');
 require('./check-stats.cjs');
 
 require('./check-props.cjs');
+
+require('./check-details.cjs');
