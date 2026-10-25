@@ -26,3 +26,5 @@ require('./check-stats.cjs');
 require('./check-props.cjs');
 
 require('./check-details.cjs');
+
+require("./check-import.cjs");
