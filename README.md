@@ -12,7 +12,7 @@ This version connects to ESPN’s public NFL scoreboard and game summaries. Scor
 
 For an ordinary bet, enter a potential return before saving. Stake and total odds are optional; Endzone calculates a return when both are supplied.
 
-Select a team marked “TO WIN” on a game card to add it to the betslip. Select it again to remove it. JSON import is hidden by default and can be enabled in Settings. System bets still need a stake per bet and odds for each selection so Endzone can calculate their separate returns.
+When you add a team-winner selection, choose a game and tap one of the two team buttons. JSON import is hidden by default and can be enabled in Settings. System bets still need a stake per bet and odds for each selection so Endzone can calculate their separate returns.
 
 ## Build
 GitHub Actions builds, runs Android lint, uploads an APK artifact and publishes a release on each main push. For local builds install JDK 17, Android SDK 35, and Gradle 8.11.1, then run `gradle :app:assembleDebug :app:lintDebug`.
