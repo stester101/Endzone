@@ -1,7 +1,7 @@
 name: Android APK
 on:
   push:
-    branches: [main]
+    branches: [main, 'redesign/**']
   workflow_dispatch:
 permissions:
   contents: write
@@ -53,8 +53,16 @@ jobs:
           name: Endzone-APK
           path: Endzone.apk
       - name: Publish downloadable APK
+        if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="android-${{ github.run_number }}"
           gh release create "$tag" Endzone.apk --target "$GITHUB_SHA" --title "Endzone Android build ${{ github.run_number }}" --notes "Install Endzone.apk on Android. Development build of the approved Games, Bets and Live Feed prototype. Live ESPN NFL scores and scoring events; saved bets stay on this device."
+      - name: Publish test APK (pre-release)
+        if: github.ref != 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="test-${{ github.run_number }}"
+          gh release create "$tag" Endzone.apk --target "$GITHUB_SHA" --prerelease --title "Endzone TEST build ${{ github.run_number }} (${GITHUB_REF_NAME})" --notes "Test build from branch ${GITHUB_REF_NAME}. Same app ID and signing key as main builds, so it installs over the current app and keeps saved bets. Not for general use."
