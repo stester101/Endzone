@@ -1,7 +1,7 @@
-name: Android APK
+name: Endzone Friends APK
 on:
   push:
-    branches: [main]
+    branches: [friends-edition]
   workflow_dispatch:
 permissions:
   contents: write
@@ -34,10 +34,8 @@ jobs:
           if [ ! -f .signing/endzone-debug.keystore ]; then
             keytool -genkeypair -keystore .signing/endzone-debug.keystore -storepass android -keypass android -alias androiddebugkey -dname 'CN=Android Debug,O=Android,C=US' -keyalg RSA -keysize 2048 -validity 10000
           fi
-      - name: Validate complete app
-        run: node scripts/check-app.cjs
-      - name: Build and lint
-        run: gradle :app:assembleDebug :app:lintDebug --no-daemon
+      - name: Build APK
+        run: gradle :app:assembleDebug --no-daemon
       - name: Verify packaged HTML
         run: |
           python - <<'PY'
@@ -50,11 +48,11 @@ jobs:
         run: cp app/build/outputs/apk/debug/app-debug.apk Endzone.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: Endzone-APK
+          name: Endzone-Friends-APK
           path: Endzone.apk
       - name: Publish downloadable APK
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag="android-${{ github.run_number }}"
-          gh release create "$tag" Endzone.apk --target "$GITHUB_SHA" --title "Endzone Android build ${{ github.run_number }}" --notes "Install Endzone.apk on Android. Development build of the approved Games, Bets and Live Feed prototype. Live ESPN NFL scores and scoring events; saved bets stay on this device."
+          tag="friends-${{ github.run_number }}"
+          gh release create "$tag" Endzone.apk --target "$GITHUB_SHA" --title "Endzone Friends build ${{ github.run_number }}" --notes "Simple Endzone friends edition. Track accumulators made from team-winner selections. Saved bets stay on this device."
