@@ -1,22 +1,20 @@
-# Endzone Android
+# Endzone (Friends Edition)
 
-Android app packaging of the approved Endzone design with live ESPN data: Games, Bets, compact views, score popups, result accumulator builder and linked Live Feed. Fits the device viewport, respects Android system bars/keyboard, supports Android Back, bundles icons offline, and stores bets/draft/preferences locally between launches.
+A simplified Android edition of Endzone for sharing with friends. It tracks ordinary NFL accumulators made from team-winner selections only. It does not include player or team props, combined markets, system bets, bookmaker import, or JSON import.
 
-## Install
-Open [Releases](https://github.com/stester101/Endzone/releases), download **Endzone.apk**, and open it on your Galaxy Flip 6. Android may ask you to allow installation from your browser. Android 8+ supported.
+## Bet flow
 
-## Status
-This version connects to ESPN’s public NFL scoreboard and game summaries. Scores refresh every 30 seconds while open; pull down or tap refresh for an immediate update. Missing probabilities display — and failed refreshes show the last update. Accumulator estimates multiply separate-game probabilities. Existing website bets are not imported or modified.
+1. On Games, tap one team in each of at least two different games.
+2. Open the betslip and check the selections.
+3. Enter the bookmaker's potential return. Stake and total odds are optional.
+4. Confirm the bet. Follow progress in My bets.
 
-## Betslip
-
-For an ordinary bet, enter a potential return before saving. Stake and total odds are optional; Endzone calculates a return when both are supplied.
-
-When you add a team-winner selection, choose a game and tap one of the two team buttons. JSON import is hidden by default and can be enabled in Settings. System bets still need a stake per bet and odds for each selection so Endzone can calculate their separate returns.
+A first-run guide explains the bet flow and the main icons. Tap the question-mark icon to open it again.
 
 ## Build
-GitHub Actions builds, runs Android lint, uploads an APK artifact and publishes a release on each main push. For local builds install JDK 17, Android SDK 35, and Gradle 8.11.1, then run `gradle :app:assembleDebug :app:lintDebug`.
 
-Development APKs use Android debug signing. The workflow caches the debug key so successive installs normally preserve app data; a cache eviction can change the key and require uninstalling. A persistent private release-signing key should be configured before distributing production builds. Do not uninstall/clear storage if you need saved bets. No betting transactions occur in this app.
+The friends edition uses the distinct Android application ID `com.endzone.tracker.friends`, so it can be installed beside the main Endzone app. It keeps the `Endzone` display name and uses separate local storage keys.
 
-Bundled Lucide icons are ISC licensed; football artwork is Twemoji CC-BY 4.0 (Twitter, Inc. and contributors).
+Build requirements: JDK 17, Android SDK 35, Android Gradle Plugin 8.9.2 and Gradle 8.11.1. GitHub Actions builds a debug APK when this branch is pushed. Development APKs are not production signed.
+
+The app uses ESPN's public NFL data. Bet records are stored locally on the device. This app only tracks bets already placed elsewhere; it does not connect to a bookmaker or place bets.
