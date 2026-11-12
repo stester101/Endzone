@@ -53,13 +53,13 @@ html.night #ez-compact .betidentityheading{background:transparent!important}
 #ez-compact .ez-cal-head button{width:44px;height:44px;border:0;border-radius:12px;background:#16281f;color:#e8f1ec;font-size:22px}
 #ez-compact .ez-cal-sum{display:flex;justify-content:space-between;margin:6px 4px 10px;font-size:13px;color:#8fa59a}#ez-compact .ez-cal .pos{color:#2ee08a}#ez-compact .ez-cal .neg{color:#ff5c76}#ez-compact .ez-cal-sum span:first-child{font-weight:800;font-size:18px}
 #ez-compact .ez-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-#ez-compact .ez-cal-grid>small{text-align:center;font-size:10px;color:#6b7f74}
+#ez-compact .ez-cal-grid>small{text-align:center;font-size:10px;color:#8fa59a}
 #ez-compact .ez-cal-day{min-height:46px;border:0;border-radius:9px;background:#0c1510;color:#8fa59a;display:flex;flex-direction:column;align-items:center;justify-content:center;font:inherit;padding:2px}
 #ez-compact .ez-cal-day span{font-size:11px}#ez-compact .ez-cal-day b{font-size:10px;font-weight:800}
 #ez-compact .ez-cal-day.pos{background:#0f3322}#ez-compact .ez-cal-day.neg{background:#3a1520}#ez-compact .ez-cal-day.sel{outline:2px solid #e8f1ec}#ez-compact .ez-cal-day.today span{color:#ffb732;font-weight:800}
 #ez-compact .ez-cal-pad{display:block}
 #ez-compact .ez-cal-detail{margin-top:10px;padding:10px;border-radius:12px;background:#0c1510;font-size:12px}#ez-compact .ez-cal-detail>div{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid #1f2e26}#ez-compact .ez-cal-detail .won em{color:#2ee08a}#ez-compact .ez-cal-detail .lost em{color:#ff5c76}#ez-compact .ez-cal-detail em{font-style:normal;font-weight:800}
-#ez-compact .ez-cal-note{font-size:10px;color:#6b7f74;margin:8px 2px 0}
+#ez-compact .ez-cal-note{font-size:10px;color:#8fa59a;margin:8px 2px 0}
 
 /* Sweat mode */
 #ez-compact .ez-sweat-go{margin-left:auto;border:0;border-radius:999px;padding:6px 12px;background:#2ee08a;color:#06130c;font-weight:800;font-size:11px}
@@ -71,6 +71,8 @@ html.night #ez-compact .betidentityheading{background:transparent!important}
 #ez-compact .ez-sw-bet{margin-bottom:12px;padding:12px;border-radius:16px;background:#101b16;border:1px solid #1f2e26}
 #ez-compact .ez-sw-bet h4{display:flex;justify-content:space-between;gap:8px;margin:0 0 8px;font-size:15px}#ez-compact .ez-sw-bet h4 em{font-style:normal;color:#2ee08a;white-space:nowrap}
 #ez-compact .ez-sw-leg{display:grid;grid-template-columns:12px 1fr;gap:2px 10px;align-items:center;padding:7px 0;border-top:1px solid #1a2822;font-size:15px}
-#ez-compact .ez-sw-leg i{width:10px;height:10px;border-radius:50%;background:#ffb732}#ez-compact .ez-sw-leg.good i{background:#2ee08a}#ez-compact .ez-sw-leg.bad i{background:#ff5c76}#ez-compact .ez-sw-leg.future i{background:#6b7f74}
+#ez-compact .ez-sw-leg i{width:10px;height:10px;border-radius:50%;background:#ffb732}#ez-compact .ez-sw-leg.good i{background:#2ee08a}#ez-compact .ez-sw-leg.bad i{background:#ff5c76}#ez-compact .ez-sw-leg.future i{background:#8fa59a}
 #ez-compact .ez-sw-leg small{grid-column:2;font-size:11px;color:#8fa59a}
 #ez-compact .ez-sw-empty{text-align:center;color:#8fa59a;margin-top:40px}
+
+#ez-compact .statuscounts{background:transparent!important}

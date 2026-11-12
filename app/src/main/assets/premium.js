@@ -126,7 +126,8 @@ function keepAwake(on){
 }
 const legLabel=l=>{try{return EndzoneMarkets.label(l);}catch(e){return l.name||l.label||'Selection';}};
 const legGame=(a,l)=>{try{return a.game(l.game);}catch(e){return null;}};
-const legTitle=(a,l)=>{const g=legGame(a,l);return (g&&g.a&&g.h?g.a+' @ '+g.h+' · ':'')+legLabel(l);};
+const legWho=(a,l)=>{const g=legGame(a,l);return g?(l.side==='away'?g.a:l.side==='home'?g.h:''):'';};
+const legTitle=(a,l)=>{const g=legGame(a,l),w=legWho(a,l);return (g&&g.a&&g.h?g.a+' @ '+g.h+' · ':'')+(w?w+' ':'')+legLabel(l);};
 /* A bet counts as settled on the last kickoff among its legs (the app stores no settle date). */
 function settledDay(a,b){
   const t=Math.max(0,...b.legs.map(l=>num(legGame(a,l)?.time)));
@@ -153,7 +154,7 @@ async function share(title,text,pngBase64){
   return 'failed';
 }
 const subscribers=new Set();
-window.EndzonePremium={version:1,fmt:{money,signed,esc},native,haptic,keepAwake,toast:t=>say(t),share,slipText,legLabel,legTitle,legClass:(l)=>legClass(app(),l),settledDay,dayKey,profit,onRender:fn=>{subscribers.add(fn);return()=>subscribers.delete(fn);},root};
+window.EndzonePremium={version:1,fmt:{money,signed,esc},native,haptic,keepAwake,toast:t=>say(t),share,slipText,legLabel,legTitle,legWho:l=>legWho(app(),l),legClass:(l)=>legClass(app(),l),settledDay,dayKey,profit,onRender:fn=>{subscribers.add(fn);return()=>subscribers.delete(fn);},root};
 
 /* ---------- Share slip ---------- */
 const P=window.EndzonePremium;
@@ -251,7 +252,7 @@ function renderSweat(a){
   const ret=open.reduce((s,b)=>s+num(a.returnOf(b)),0);
   const legHtml=l=>{const g=a.game(l.game),c=P.legClass(l);let sg='';try{sg=a.signal(l).text||'';}catch(e){}
     const score=g?esc(g.a+' '+g.as+'–'+g.hs+' '+g.h)+(g.state==='live'?' · '+esc(g.clock||'live'):g.state==='final'?' · Final':''):'';
-    return `<div class="ez-sw-leg ${c}"><i></i><span>${esc(P.legLabel(l))}</span><small>${score}${sg?' · '+esc(sg):''}</small></div>`;};
+    return `<div class="ez-sw-leg ${c}"><i></i><span>${esc((P.legWho(l)?P.legWho(l)+" · ":"")+P.legLabel(l))}</span><small>${score}${sg?' · '+esc(sg):''}</small></div>`;};
   sweat.innerHTML=`<div class="ez-sw-head"><div><small>SWEAT MODE · SCREEN STAYS ON</small><b>${open.length} open · ${money(ret)} to return</b></div><button data-swexit aria-label="Exit sweat mode">Done</button></div>
 <div class="ez-sw-list">${open.length?open.map(b=>`<article class="ez-sw-bet"><h4>${esc(b.name||'Bet')}<em>${money(num(b.stake))} → ${money(num(a.returnOf(b)))}</em></h4>${b.legs.map(legHtml).join('')}</article>`).join(''):'<p class="ez-sw-empty">No open bets to sweat.</p>'}</div>`;
 }
