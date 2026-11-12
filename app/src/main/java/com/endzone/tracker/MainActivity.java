@@ -22,6 +22,7 @@ public class MainActivity extends Activity {
   web.getSettings().setDomStorageEnabled(true);
   web.getSettings().setAllowFileAccess(false);
   web.getSettings().setAllowContentAccess(false);
+  web.addJavascriptInterface(new Bridge(),"EndzoneNative");
   web.setWebViewClient(new WebViewClient(){
    @Override public boolean shouldOverrideUrlLoading(WebView v, android.webkit.WebResourceRequest request){ return true; }
   });
@@ -63,6 +64,52 @@ public class MainActivity extends Activity {
    html=html.replace("<script src=\"premium.js\"></script>","<script>"+asset("premium.js")+"</script>");
    web.loadDataWithBaseURL("https://endzone.local/",html,"text/html","UTF-8",null);
   }catch(java.io.IOException e){throw new IllegalStateException("Cannot load Endzone",e);}
+ }
+
+ /* Native bridge for premium.js (window.EndzoneNative). Every method is optional on the JS side; premium.js falls back to web APIs. */
+ private class Bridge {
+  @android.webkit.JavascriptInterface public int version(){return 1;}
+  /** Share plain text through the Android share sheet. */
+  @android.webkit.JavascriptInterface public boolean shareText(final String title,final String text){
+   runOnUiThread(()->{try{
+    android.content.Intent send=new android.content.Intent(android.content.Intent.ACTION_SEND);
+    send.setType("text/plain");send.putExtra(android.content.Intent.EXTRA_TEXT,text);if(title!=null)send.putExtra(android.content.Intent.EXTRA_SUBJECT,title);
+    startActivity(android.content.Intent.createChooser(send,title==null?"Share":title));
+   }catch(Exception e){}});
+   return true;
+  }
+  /** Share a PNG (base64, no data: prefix) with optional caption text. Returns false if the image cannot be decoded or written. */
+  @android.webkit.JavascriptInterface public boolean shareImage(final String title,final String text,String pngBase64){
+   try{
+    byte[] bytes=android.util.Base64.decode(pngBase64,android.util.Base64.DEFAULT);
+    java.io.File dir=new java.io.File(getCacheDir(),"shared");dir.mkdirs();
+    java.io.File file=new java.io.File(dir,"endzone-slip.png");
+    java.io.FileOutputStream out=new java.io.FileOutputStream(file);out.write(bytes);out.close();
+    final android.net.Uri uri=androidx.core.content.FileProvider.getUriForFile(MainActivity.this,getPackageName()+".fileprovider",file);
+    runOnUiThread(()->{try{
+     android.content.Intent send=new android.content.Intent(android.content.Intent.ACTION_SEND);
+     send.setType("image/png");send.putExtra(android.content.Intent.EXTRA_STREAM,uri);
+     if(text!=null)send.putExtra(android.content.Intent.EXTRA_TEXT,text);
+     send.addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
+     startActivity(android.content.Intent.createChooser(send,title==null?"Share slip":title));
+    }catch(Exception e){}});
+    return true;
+   }catch(Exception e){return false;}
+  }
+  /** Keep the screen on (sweat mode). */
+  @android.webkit.JavascriptInterface public void keepAwake(final boolean on){
+   runOnUiThread(()->{if(on)getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);else getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);});
+  }
+  /** Vibrate with a pattern in ms (off,on,off,on...). Needs the VIBRATE permission already in the manifest. */
+  @android.webkit.JavascriptInterface public void haptic(String patternCsv){
+   try{
+    String[] parts=patternCsv.split(",");long[] pattern=new long[parts.length];
+    for(int i=0;i<parts.length;i++)pattern[i]=Math.max(0,Math.min(2000,Long.parseLong(parts[i].trim())));
+    android.os.Vibrator vibrator=(android.os.Vibrator)getSystemService(VIBRATOR_SERVICE);
+    if(vibrator==null)return;
+    if(android.os.Build.VERSION.SDK_INT>=26)vibrator.vibrate(android.os.VibrationEffect.createWaveform(pattern,-1));else vibrator.vibrate(pattern,-1);
+   }catch(Exception e){}
+  }
  }
 
  private String asset(String name) throws java.io.IOException { java.io.InputStream in=getAssets().open(name); try { return new String(read(in),java.nio.charset.StandardCharsets.UTF_8); } finally { in.close(); } }

@@ -33,3 +33,8 @@ require('./check-details.cjs');
 require("./check-import.cjs");
 
 require("./check-compact.cjs");
+
+const main=fs.readFileSync('app/src/main/java/com/endzone/tracker/MainActivity.java','utf8');
+for(const m of ['addJavascriptInterface','"EndzoneNative"','shareText','shareImage','keepAwake','haptic'])assert(main.includes(m),'Bridge missing '+m);
+assert(fs.readFileSync('app/src/main/AndroidManifest.xml','utf8').includes('com.endzone.tracker.fileprovider'),'FileProvider missing');
+console.log('Native bridge validated');
