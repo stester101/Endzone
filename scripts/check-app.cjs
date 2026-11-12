@@ -38,3 +38,6 @@ const main=fs.readFileSync('app/src/main/java/com/endzone/tracker/MainActivity.j
 for(const m of ['addJavascriptInterface','"EndzoneNative"','shareText','shareImage','keepAwake','haptic'])assert(main.includes(m),'Bridge missing '+m);
 assert(fs.readFileSync('app/src/main/AndroidManifest.xml','utf8').includes('com.endzone.tracker.fileprovider'),'FileProvider missing');
 console.log('Native bridge validated');
+
+assert(fs.readFileSync('app/src/main/assets/premium.js','utf8').includes('window.EndzonePremium='),'Shared premium API missing');
+console.log('Premium shared API validated');

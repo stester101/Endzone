@@ -72,7 +72,7 @@ function next(){
   toast.className='ez-toast '+t.tone;
   toast.innerHTML=`<b>${esc(t.title)}</b><span>${esc(t.text)}</span>`;
   toast.hidden=false;requestAnimationFrame(()=>toast.classList.add('show'));
-  if(t.buzz&&navigator.vibrate){try{navigator.vibrate(t.buzz);}catch(e){}}
+  if(t.buzz)haptic(t.buzz);
   clearTimeout(toastTimer);toastTimer=setTimeout(hideToast,t.ms||5500);
 }
 function say(t){queue.push(t);next();}
@@ -111,7 +111,52 @@ root.addEventListener('click',e=>{
   say({title:theme==='night'?'Night theme':'Light theme',text:'Tap the logo to switch',tone:'pending',ms:1800});
 });
 
-function update(){const a=app();if(!a)return;try{renderBar(a);markLive(a);watchScores(a);}catch(e){console.error('Endzone premium',e);}}
+/* ---------- Shared API (window.EndzonePremium) ----------
+   Used by share slip, Stats calendar and sweat mode. Native calls fall back to web APIs when the APK bridge is absent. */
+const native=()=>window.EndzoneNative||null;
+function haptic(pattern){
+  const p=Array.isArray(pattern)?pattern:[pattern];
+  try{const n=native();if(n&&n.haptic){n.haptic(p.join(','));return true;}}catch(e){}
+  try{if(navigator.vibrate)return navigator.vibrate(p);}catch(e){}
+  return false;
+}
+function keepAwake(on){
+  try{const n=native();if(n&&n.keepAwake){n.keepAwake(!!on);return true;}}catch(e){}
+  return false;
+}
+const legLabel=l=>{try{return EndzoneMarkets.label(l);}catch(e){return l.name||l.label||'Selection';}};
+const legGame=(a,l)=>{try{return a.game(l.game);}catch(e){return null;}};
+const legTitle=(a,l)=>{const g=legGame(a,l);return (g&&g.a&&g.h?g.a+' @ '+g.h+' · ':'')+legLabel(l);};
+/* A bet counts as settled on the last kickoff among its legs (the app stores no settle date). */
+function settledDay(a,b){
+  const t=Math.max(0,...b.legs.map(l=>num(legGame(a,l)?.time)));
+  return new Date(t||num(b.addedAt)||Date.now());
+}
+const dayKey=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');};
+function profit(a,b){return b.state==='won'?num(a.returnOf(b))-num(b.stake):b.state==='lost'?-num(b.stake):0;}
+function slipText(a,b){
+  const stateWord={open:'Open',won:'WON',lost:'LOST'}[b.state]||b.state;
+  const lines=[`${b.name||'Bet'} · ${stateWord}`,...b.legs.map(l=>'• '+legTitle(a,l))];
+  const ret=a.returnOf(b);
+  lines.push(`Stake ${money(num(b.stake))} · Odds ${Number.isFinite(b.odds)?b.odds.toFixed(2):'—'} · Return ${money(ret)}`);
+  lines.push('via Endzone');
+  return lines.join('
+');
+}
+async function share(title,text,pngBase64){
+  const n=native();
+  try{
+    if(n&&pngBase64&&n.shareImage&&n.shareImage(title,text,pngBase64))return 'native-image';
+    if(n&&n.shareText){n.shareText(title,text);return 'native-text';}
+  }catch(e){}
+  try{if(navigator.share){await navigator.share({title,text});return 'web';}}catch(e){if(e&&e.name==='AbortError')return 'cancelled';}
+  try{await navigator.clipboard.writeText(text);say({title:'Copied',text:'Slip text copied to clipboard',tone:'good',ms:2200});return 'clipboard';}catch(e){}
+  return 'failed';
+}
+const subscribers=new Set();
+window.EndzonePremium={version:1,fmt:{money,signed,esc},native,haptic,keepAwake,toast:t=>say(t),share,slipText,legLabel,legTitle,legClass:(l)=>legClass(app(),l),settledDay,dayKey,profit,onRender:fn=>{subscribers.add(fn);return()=>subscribers.delete(fn);},root};
+
+function update(){const a=app();if(!a)return;try{renderBar(a);markLive(a);watchScores(a);subscribers.forEach(fn=>{try{fn(a);}catch(e){console.error('Endzone premium module',e);}});}catch(e){console.error('Endzone premium',e);}}
 window.addEventListener('endzone:render',update);
 update();
 })();
