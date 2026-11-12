@@ -140,8 +140,7 @@ function slipText(a,b){
   const ret=a.returnOf(b);
   lines.push(`Stake ${money(num(b.stake))} · Odds ${Number.isFinite(b.odds)?b.odds.toFixed(2):'—'} · Return ${money(ret)}`);
   lines.push('via Endzone');
-  return lines.join('
-');
+  return lines.join('\n');
 }
 async function share(title,text,pngBase64){
   const n=native();
