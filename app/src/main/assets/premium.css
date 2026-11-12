@@ -42,3 +42,5 @@ html.night #ez-compact .app{box-shadow:none}
 html.night #ez-compact nav{backdrop-filter:blur(10px)}
 @media (prefers-reduced-motion:reduce){#ez-compact .ez-pulse{animation:none}#ez-compact .ez-toast{transition:none}}
 html.night #ez-compact .betidentityheading{background:transparent!important}
+
+#ez-compact .ez-share{background:#e6f4ec!important;color:#087c40!important}html.night #ez-compact .ez-share{background:#16281f!important;color:#2ee08a!important}

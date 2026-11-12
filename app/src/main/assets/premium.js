@@ -155,6 +155,53 @@ async function share(title,text,pngBase64){
 const subscribers=new Set();
 window.EndzonePremium={version:1,fmt:{money,signed,esc},native,haptic,keepAwake,toast:t=>say(t),share,slipText,legLabel,legTitle,legClass:(l)=>legClass(app(),l),settledDay,dayKey,profit,onRender:fn=>{subscribers.add(fn);return()=>subscribers.delete(fn);},root};
 
+/* ---------- Share slip ---------- */
+const P=window.EndzonePremium;
+function slipPng(a,b){
+  try{
+    const W=1080,pad=64,rowH=84,legs=b.legs.map(l=>({t:P.legTitle(a,l),c:P.legClass(l)}));
+    const H=pad*2+330+legs.length*rowH+130,c=document.createElement('canvas');c.width=W;c.height=H;
+    const g=c.getContext('2d');if(!g)return null;
+    g.fillStyle='#070d0a';g.fillRect(0,0,W,H);
+    g.fillStyle='#101b16';g.beginPath();g.roundRect?g.roundRect(32,32,W-64,H-64,36):g.rect(32,32,W-64,H-64);g.fill();
+    const col={good:'#2ee08a',bad:'#ff5c76',pending:'#ffb732',future:'#6b7f74'};
+    const stateCol=b.state==='won'?col.good:b.state==='lost'?col.bad:col.pending;
+    g.textBaseline='alphabetic';
+    g.fillStyle='#8fa59a';g.font='600 30px system-ui,Roboto,sans-serif';g.fillText('ENDZONE',pad+16,pad+54);
+    g.fillStyle=stateCol;g.font='800 30px system-ui,Roboto,sans-serif';g.textAlign='right';g.fillText({open:'OPEN',won:'WON',lost:'LOST'}[b.state]||String(b.state).toUpperCase(),W-pad-16,pad+54);g.textAlign='left';
+    g.fillStyle='#eef5f1';g.font='800 56px system-ui,Roboto,sans-serif';
+    let name=String(b.name||'Bet');while(name.length>3&&g.measureText(name).width>W-pad*2-32)name=name.slice(0,-2);if(name!==String(b.name||'Bet'))name+='…';
+    g.fillText(name,pad+16,pad+140);
+    let y=pad+200;
+    legs.forEach(l=>{
+      g.fillStyle=col[l.c]||col.pending;g.beginPath();g.arc(pad+30,y+8,12,0,6.3);g.fill();
+      g.fillStyle='#e8f1ec';g.font='500 34px system-ui,Roboto,sans-serif';
+      let t=l.t;while(t.length>3&&g.measureText(t).width>W-pad*2-90)t=t.slice(0,-2);if(t!==l.t)t+='…';
+      g.fillText(t,pad+62,y+20);y+=rowH;
+    });
+    y+=20;g.fillStyle='#24352c';g.fillRect(pad+16,y,W-pad*2-32,2);y+=70;
+    const ret=a.returnOf(b),cells=[['STAKE',P.fmt.money(Number(b.stake))],['ODDS',Number.isFinite(b.odds)?b.odds.toFixed(2):'—'],[b.state==='won'?'RETURNED':'TO RETURN',P.fmt.money(ret)]];
+    cells.forEach((x,i)=>{const cx=pad+16+i*((W-pad*2-32)/3);g.fillStyle='#8fa59a';g.font='600 26px system-ui,Roboto,sans-serif';g.fillText(x[0],cx,y);g.fillStyle=i===2?col.good:'#eef5f1';g.font='800 44px system-ui,Roboto,sans-serif';g.fillText(x[1],cx,y+56);});
+    return c.toDataURL('image/png').split(',')[1];
+  }catch(e){console.error('Endzone slip image',e);return null;}
+}
+async function shareBet(index){
+  const a=app(),b=a&&a.bets()[index];if(!b)return;
+  P.haptic(30);
+  const how=await P.share(b.name||'Endzone slip',P.slipText(a,b),slipPng(a,b));
+  if(how==='failed')P.toast({title:'Could not share',text:'No share target available',tone:'bad',ms:2500});
+}
+function injectShare(){
+  root.querySelectorAll('[data-deletebet]').forEach(del=>{
+    if(del.parentElement.querySelector('[data-sharebet]'))return;
+    const btn=document.createElement('button');btn.type='button';btn.className=del.className+' ez-share';
+    btn.dataset.sharebet=del.dataset.deletebet;btn.textContent='Share';
+    del.before(btn);
+  });
+}
+root.addEventListener('click',e=>{const b=e.target.closest('[data-sharebet]');if(!b)return;e.preventDefault();e.stopPropagation();shareBet(Number(b.dataset.sharebet));},true);
+P.onRender(injectShare);
+
 function update(){const a=app();if(!a)return;try{renderBar(a);markLive(a);watchScores(a);subscribers.forEach(fn=>{try{fn(a);}catch(e){console.error('Endzone premium module',e);}});}catch(e){console.error('Endzone premium',e);}}
 window.addEventListener('endzone:render',update);
 update();
