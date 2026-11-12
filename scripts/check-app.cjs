@@ -5,6 +5,9 @@ const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].ma
 assert(scripts.length>0,'App script missing');
 scripts.forEach(s=>new vm.Script(s));
 assert(html.includes("data-view=\"feed\""),'Live tab missing');
+new vm.Script(fs.readFileSync('app/src/main/assets/premium.js','utf8'));
+for(const f of ['night.css','premium.css','premium.js'])assert(fs.readFileSync('app/src/main/java/com/endzone/tracker/MainActivity.java','utf8').includes('asset("'+f+'")'),f+' not bundled');
+assert(html.includes('window.EndzoneApp='),'Premium hook missing');
 console.log('Complete app HTML and JavaScript validated');
 
 new vm.Script(fs.readFileSync('app/src/main/assets/espn.js','utf8'));

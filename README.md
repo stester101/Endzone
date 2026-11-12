@@ -20,3 +20,12 @@ GitHub Actions builds, runs Android lint, uploads an APK artifact and publishes 
 Development APKs use Android debug signing. The workflow caches the debug key so successive installs normally preserve app data; a cache eviction can change the key and require uninstalling. A persistent private release-signing key should be configured before distributing production builds. Do not uninstall/clear storage if you need saved bets. No betting transactions occur in this app.
 
 Bundled Lucide icons are ISC licensed; football artwork is Twemoji CC-BY 4.0 (Twitter, Inc. and contributors).
+
+## Premium test branch (`redesign/premium`)
+- Night theme by default. Tap the Endzone logo to switch between night and light. The choice is stored in `endzone-theme` and does not change saved bets.
+- "Your action" card above Games and Bets: money in play, potential return, 7-day profit/loss, live count and a status bar for every open leg. Tap it to open Bets.
+- Score alerts: a toast and a short vibration when a game with your open bets scores or ends, with the number of legs on track or behind. Tap the toast to open Live.
+- Live games have a green edge on the Games tab.
+- New adaptive "Speed E" launcher icon and a vector header logo.
+- `night.css` is generated from the app colours; `premium.css` and `premium.js` hold the new layer. `premium.js` reads state only through `window.EndzoneApp` and never writes bets.
+- Pushes to `redesign/**` publish a GitHub pre-release named `test-N`; only `main` publishes `android-N` releases.

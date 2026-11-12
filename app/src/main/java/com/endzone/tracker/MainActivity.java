@@ -14,11 +14,10 @@ public class MainActivity extends Activity {
 
  @Override public void onCreate(Bundle state) {
   super.onCreate(state);
-  getWindow().setStatusBarColor(Color.rgb(241,245,242));
-  getWindow().setNavigationBarColor(Color.WHITE);
-  getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+  getWindow().setStatusBarColor(Color.rgb(7,13,10));
+  getWindow().setNavigationBarColor(Color.rgb(11,20,16));
   web=new WebView(this);
-  web.setBackgroundColor(Color.rgb(241,245,242));
+  web.setBackgroundColor(Color.rgb(7,13,10));
   web.getSettings().setJavaScriptEnabled(true);
   web.getSettings().setDomStorageEnabled(true);
   web.getSettings().setAllowFileAccess(false);
@@ -59,13 +58,14 @@ public class MainActivity extends Activity {
    java.io.InputStream styling=getAssets().open("stats.css");
    String statsCss=new String(read(styling),java.nio.charset.StandardCharsets.UTF_8);styling.close();
    html=html.replace("<link rel=\"stylesheet\" href=\"stats.css\">","<style>"+statsCss+"</style>");
-   java.io.InputStream branding=getAssets().open("endzone-wordmark.png");
-   String brandImage=android.util.Base64.encodeToString(read(branding),android.util.Base64.NO_WRAP);branding.close();
-   html=html.replace("src=\"endzone-wordmark.png\"","src=\"data:image/png;base64,"+brandImage+"\"");
+   html=html.replace("<link rel=\"stylesheet\" href=\"night.css\">","<style>"+asset("night.css")+"</style>");
+   html=html.replace("<link rel=\"stylesheet\" href=\"premium.css\">","<style>"+asset("premium.css")+"</style>");
+   html=html.replace("<script src=\"premium.js\"></script>","<script>"+asset("premium.js")+"</script>");
    web.loadDataWithBaseURL("https://endzone.local/",html,"text/html","UTF-8",null);
   }catch(java.io.IOException e){throw new IllegalStateException("Cannot load Endzone",e);}
  }
 
+ private String asset(String name) throws java.io.IOException { java.io.InputStream in=getAssets().open(name); try { return new String(read(in),java.nio.charset.StandardCharsets.UTF_8); } finally { in.close(); } }
  private byte[] read(java.io.InputStream input) throws java.io.IOException { java.io.ByteArrayOutputStream out=new java.io.ByteArrayOutputStream(); byte[] buffer=new byte[8192]; int count; while((count=input.read(buffer))!=-1)out.write(buffer,0,count); return out.toByteArray(); }
  @Override public void onBackPressed(){web.evaluateJavascript("Boolean(window.endzoneBack && window.endzoneBack())",result->{if(!"true".equals(result))super.onBackPressed();});}
  @Override protected void onPause(){super.onPause();web.onPause();web.pauseTimers();}

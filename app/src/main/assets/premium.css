@@ -1,0 +1,44 @@
+/* Endzone premium layer. Loaded after the app styles. Night colours live in night.css. */
+#ez-compact .app{font-family:system-ui,Roboto,"Segoe UI",Arial,sans-serif;font-variant-numeric:tabular-nums}
+#ez-compact .endzone-brand{display:flex;align-items:center;gap:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;background:none!important;padding:0!important}
+#ez-compact .ez-mark{width:30px;height:30px;flex:none;border-radius:8px}
+#ez-compact .ez-word{font:italic 900 21px/1 system-ui,Roboto,Arial,sans-serif;letter-spacing:.2px;color:#0c1a14}
+#ez-compact .ez-word em{color:#087c40}
+
+/* Your action summary */
+#ez-compact .ez-sweat{flex-shrink:0;margin:0 10px 8px;padding:10px 12px 9px;border-radius:16px;background:#0c1a14;color:#e8f1ec;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#ez-compact .ez-sweat[hidden]{display:none}
+#ez-compact .ez-sweat-top{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end}
+#ez-compact .ez-sweat small{display:flex;align-items:center;gap:5px;font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#8fa59a}
+#ez-compact .ez-sweat b{display:block;font-size:16px;font-weight:800;margin-top:2px;white-space:nowrap}
+#ez-compact .ez-sweat .pos{color:#2ee08a}#ez-compact .ez-sweat .neg{color:#ff5c76}
+#ez-compact .ez-sweat-count{text-align:right}#ez-compact .ez-sweat-count small{justify-content:flex-end}
+#ez-compact .ez-legbar{display:flex;gap:3px;height:5px;margin:9px 0 6px;border-radius:3px;overflow:hidden;background:#1d2b24}
+#ez-compact .ez-legbar i{display:block;border-radius:3px}
+#ez-compact .ez-legbar .good{background:#2ee08a}#ez-compact .ez-legbar .pending{background:#ffb732}#ez-compact .ez-legbar .bad{background:#ff5c76}#ez-compact .ez-legbar .future{background:#3a4b42}
+#ez-compact .ez-sweat-legs{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;color:#8fa59a}
+#ez-compact .ez-sweat-legs .good{color:#2ee08a}#ez-compact .ez-sweat-legs .pending{color:#ffb732}#ez-compact .ez-sweat-legs .bad{color:#ff5c76}
+#ez-compact .ez-sweat-empty{display:flex;justify-content:space-between;font-size:12px;color:#8fa59a}
+#ez-compact .ez-pulse{width:7px;height:7px;border-radius:50%;background:#ff5c76;box-shadow:0 0 0 0 #ff5c7699;animation:ezpulse 1.6s infinite}
+@keyframes ezpulse{0%{box-shadow:0 0 0 0 #ff5c7680}70%{box-shadow:0 0 0 7px #ff5c7600}100%{box-shadow:0 0 0 0 #ff5c7600}}
+
+/* Live game accent */
+#ez-compact .games article.ez-live{box-shadow:inset 3px 0 0 #22d47e}
+
+/* Score alert toast */
+#ez-compact .ez-toast{position:absolute;left:10px;right:10px;top:10px;z-index:60;display:flex;flex-direction:column;gap:2px;padding:11px 14px;border-radius:14px;background:#0c1a14;color:#e8f1ec;border:1px solid #24352c;box-shadow:0 12px 30px #0007;transform:translateY(-130%);opacity:0;transition:transform .28s cubic-bezier(.2,.9,.3,1.2),opacity .2s}
+#ez-compact .ez-toast.show{transform:none;opacity:1}
+#ez-compact .ez-toast[hidden]{display:none}
+#ez-compact .ez-toast b{font-size:14px;font-weight:800}
+#ez-compact .ez-toast span{font-size:12px;color:#9fb3a8}
+#ez-compact .ez-toast.good{border-left:4px solid #2ee08a}#ez-compact .ez-toast.bad{border-left:4px solid #ff5c76}#ez-compact .ez-toast.pending{border-left:4px solid #ffb732}
+
+/* Night theme finishing */
+html.night,html.night body{background:#070d0a}
+html.night #ez-compact .ez-word{color:#eef5f1}
+html.night #ez-compact .ez-word em{color:#2ee08a}
+html.night #ez-compact .ez-sweat{background:#101b16;border:1px solid #1f2e26}
+html.night #ez-compact .app{box-shadow:none}
+html.night #ez-compact nav{backdrop-filter:blur(10px)}
+@media (prefers-reduced-motion:reduce){#ez-compact .ez-pulse{animation:none}#ez-compact .ez-toast{transition:none}}
+html.night #ez-compact .betidentityheading{background:transparent!important}
