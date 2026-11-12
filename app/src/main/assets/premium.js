@@ -196,7 +196,7 @@ function injectShare(){
   root.querySelectorAll('[data-deletebet]').forEach(del=>{
     if(del.parentElement.querySelector('[data-sharebet]'))return;
     const btn=document.createElement('button');btn.type='button';btn.className=del.className+' ez-share';
-    btn.dataset.sharebet=del.dataset.deletebet;btn.textContent='Share';
+    btn.dataset.sharebet=del.dataset.deletebet;btn.textContent='Share';btn.setAttribute('aria-label','Share this bet slip');
     del.before(btn);
   });
 }
@@ -219,13 +219,13 @@ function calendarHtml(a){
   for(let d=1;d<=count;d++){
     const k=P.dayKey(new Date(y,m,d)),e=days.get(k),cls=!e?'':e.pnl>0?'pos':e.pnl<0?'neg':'flat';
     const today=k===P.dayKey(now)?' today':'',sel=calDay===k?' sel':'';
-    cells+=e?`<button class="ez-cal-day ${cls}${today}${sel}" data-calday="${k}"><span>${d}</span><b>${P.fmt.signed(e.pnl).replace('£','')}</b></button>`:`<div class="ez-cal-day empty${today}"><span>${d}</span></div>`;
+    cells+=e?`<button class="ez-cal-day ${cls}${today}${sel}" data-calday="${k}" aria-pressed="${calDay===k}" aria-label="${d} ${MONTHS[m]}, ${P.fmt.signed(e.pnl)}, ${e.bets.length} bet${e.bets.length>1?'s':''}"><span>${d}</span><b>${P.fmt.signed(e.pnl).replace('£','')}</b></button>`:`<div class="ez-cal-day empty${today}"><span>${d}</span></div>`;
   }
   const sel=calDay&&days.get(calDay);
   const detail=sel?`<div class="ez-cal-detail"><b>${esc(new Date(calDay+'T12:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}))} · ${P.fmt.signed(sel.pnl)}</b>${sel.bets.map(b=>`<div class="${b.state}"><span>${esc(b.name||'Bet')}</span><em>${P.fmt.signed(P.profit(a,b))}</em></div>`).join('')}</div>`:'';
   return `<section class="ez-cal"><div class="ez-cal-head"><button data-calnav="-1" aria-label="Previous month">‹</button><div><small>PROFIT &amp; LOSS</small><h3>${MONTHS[m]} ${y}</h3></div><button data-calnav="1" aria-label="Next month">›</button></div>
 <div class="ez-cal-sum"><span class="${monthPnl>0?'pos':monthPnl<0?'neg':''}">${P.fmt.signed(monthPnl)}</span><span>${w} won · ${l} lost</span></div>
-<div class="ez-cal-grid">${['M','T','W','T','F','S','S'].map(x=>`<small>${x}</small>`).join('')}${cells}</div>${detail}<p class="ez-cal-note">Days use each bet's last kickoff. Lost stakes count as negative; pushes are not tracked.</p></section>`;
+<div class="ez-cal-grid" role="group" aria-label="Daily profit and loss">${['M','T','W','T','F','S','S'].map(x=>`<small>${x}</small>`).join('')}${cells}</div>${detail}${settled.length?'':'<p class="ez-cal-empty">No settled bets yet. Won and lost bets will colour this calendar.</p>'}<p class="ez-cal-note">Days use each bet's last kickoff. Lost stakes count as negative; pushes are not tracked.</p></section>`;
 }
 function injectCalendar(a){
   const st=root.querySelector('.stats');if(!st||st.hidden)return;
@@ -260,7 +260,9 @@ function setSweat(on){
   if(on===sweating)return;sweating=on;sweat.hidden=!on;
   P.keepAwake(on);P.haptic(on?[40,40,40]:20);
   if(on&&app())renderSweat(app());
+  if(on)setTimeout(()=>sweat.querySelector('[data-swexit]')?.focus(),50);
 }
+sweat.addEventListener('keydown',e=>{if(e.key==='Escape')setSweat(false);});
 P.onRender(a=>{if(sweating)renderSweat(a);});
 P.setSweat=setSweat;P.isSweating=()=>sweating;
 root.addEventListener('click',e=>{
