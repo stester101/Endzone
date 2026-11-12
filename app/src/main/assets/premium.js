@@ -202,6 +202,45 @@ function injectShare(){
 root.addEventListener('click',e=>{const b=e.target.closest('[data-sharebet]');if(!b)return;e.preventDefault();e.stopPropagation();shareBet(Number(b.dataset.sharebet));},true);
 P.onRender(injectShare);
 
+/* ---------- Stats calendar (profit/loss by day) ---------- */
+let calMonth=null,calDay=null;
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function calendarHtml(a){
+  const settled=a.bets().filter(b=>b.state==='won'||b.state==='lost');
+  const days=new Map();
+  settled.forEach(b=>{const k=P.dayKey(P.settledDay(a,b));const d=days.get(k)||{pnl:0,bets:[]};d.pnl+=P.profit(a,b);d.bets.push(b);days.set(k,d);});
+  const now=new Date();if(!calMonth)calMonth=new Date(now.getFullYear(),now.getMonth(),1);
+  const y=calMonth.getFullYear(),m=calMonth.getMonth(),first=new Date(y,m,1),count=new Date(y,m+1,0).getDate();
+  const lead=(first.getDay()+6)%7;let monthPnl=0,w=0,l=0;
+  for(let d=1;d<=count;d++){const e=days.get(P.dayKey(new Date(y,m,d)));if(e){monthPnl+=e.pnl;e.bets.forEach(b=>b.state==='won'?w++:l++);}}
+  let cells='';
+  for(let i=0;i<lead;i++)cells+='<i class="ez-cal-pad"></i>';
+  for(let d=1;d<=count;d++){
+    const k=P.dayKey(new Date(y,m,d)),e=days.get(k),cls=!e?'':e.pnl>0?'pos':e.pnl<0?'neg':'flat';
+    const today=k===P.dayKey(now)?' today':'',sel=calDay===k?' sel':'';
+    cells+=e?`<button class="ez-cal-day ${cls}${today}${sel}" data-calday="${k}"><span>${d}</span><b>${P.fmt.signed(e.pnl).replace('£','')}</b></button>`:`<div class="ez-cal-day empty${today}"><span>${d}</span></div>`;
+  }
+  const sel=calDay&&days.get(calDay);
+  const detail=sel?`<div class="ez-cal-detail"><b>${esc(new Date(calDay+'T12:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}))} · ${P.fmt.signed(sel.pnl)}</b>${sel.bets.map(b=>`<div class="${b.state}"><span>${esc(b.name||'Bet')}</span><em>${P.fmt.signed(P.profit(a,b))}</em></div>`).join('')}</div>`:'';
+  return `<section class="ez-cal"><div class="ez-cal-head"><button data-calnav="-1" aria-label="Previous month">‹</button><div><small>PROFIT &amp; LOSS</small><h3>${MONTHS[m]} ${y}</h3></div><button data-calnav="1" aria-label="Next month">›</button></div>
+<div class="ez-cal-sum"><span class="${monthPnl>0?'pos':monthPnl<0?'neg':''}">${P.fmt.signed(monthPnl)}</span><span>${w} won · ${l} lost</span></div>
+<div class="ez-cal-grid">${['M','T','W','T','F','S','S'].map(x=>`<small>${x}</small>`).join('')}${cells}</div>${detail}<p class="ez-cal-note">Days use each bet's last kickoff. Lost stakes count as negative; pushes are not tracked.</p></section>`;
+}
+function injectCalendar(a){
+  const st=root.querySelector('.stats');if(!st||st.hidden)return;
+  if(st.querySelector('.ez-cal'))return;
+  st.insertAdjacentHTML('afterbegin',calendarHtml(a));
+}
+root.addEventListener('click',e=>{
+  const nav=e.target.closest('[data-calnav]'),day=e.target.closest('[data-calday]');
+  if(!nav&&!day)return;
+  if(nav){calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()+Number(nav.dataset.calnav),1);calDay=null;}
+  else calDay=calDay===day.dataset.calday?null:day.dataset.calday;
+  const cal=root.querySelector('.stats .ez-cal');if(cal&&app())cal.outerHTML=calendarHtml(app());
+  P.haptic(15);
+});
+P.onRender(injectCalendar);
+
 function update(){const a=app();if(!a)return;try{renderBar(a);markLive(a);watchScores(a);subscribers.forEach(fn=>{try{fn(a);}catch(e){console.error('Endzone premium module',e);}});}catch(e){console.error('Endzone premium',e);}}
 window.addEventListener('endzone:render',update);
 update();
