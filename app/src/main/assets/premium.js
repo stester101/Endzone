@@ -51,7 +51,7 @@ function renderBar(a){
 <div class="ez-sweat-count"><small>${live?'<span class="ez-pulse"></span>Live':'Open'}</small><b>${live||open.length}</b></div>
 </div>
 <div class="ez-legbar" aria-hidden="true">${total?seg('good')+seg('pending')+seg('bad')+seg('future'):''}</div>
-<div class="ez-sweat-legs">${parts}</div>`;
+<div class="ez-sweat-legs">${parts}<button class="ez-sweat-go" data-sweatstart>Sweat mode</button></div>`;
 }
 
 /* ---------- Live card accents ---------- */
@@ -240,6 +240,34 @@ root.addEventListener('click',e=>{
   P.haptic(15);
 });
 P.onRender(injectCalendar);
+
+/* ---------- Sweat mode (full-screen live view of open bets, screen kept awake) ---------- */
+const sweat=document.createElement('div');
+sweat.className='ez-sweatmode';sweat.hidden=true;sweat.setAttribute('role','dialog');sweat.setAttribute('aria-label','Sweat mode');
+(root.querySelector('.app')||root).appendChild(sweat);
+let sweating=false;
+function renderSweat(a){
+  const open=a.bets().filter(b=>b.state==='open');
+  const ret=open.reduce((s,b)=>s+num(a.returnOf(b)),0);
+  const legHtml=l=>{const g=a.game(l.game),c=P.legClass(l);let sg='';try{sg=a.signal(l).text||'';}catch(e){}
+    const score=g?esc(g.a+' '+g.as+'–'+g.hs+' '+g.h)+(g.state==='live'?' · '+esc(g.clock||'live'):g.state==='final'?' · Final':''):'';
+    return `<div class="ez-sw-leg ${c}"><i></i><span>${esc(P.legLabel(l))}</span><small>${score}${sg?' · '+esc(sg):''}</small></div>`;};
+  sweat.innerHTML=`<div class="ez-sw-head"><div><small>SWEAT MODE · SCREEN STAYS ON</small><b>${open.length} open · ${money(ret)} to return</b></div><button data-swexit aria-label="Exit sweat mode">Done</button></div>
+<div class="ez-sw-list">${open.length?open.map(b=>`<article class="ez-sw-bet"><h4>${esc(b.name||'Bet')}<em>${money(num(b.stake))} → ${money(num(a.returnOf(b)))}</em></h4>${b.legs.map(legHtml).join('')}</article>`).join(''):'<p class="ez-sw-empty">No open bets to sweat.</p>'}</div>`;
+}
+function setSweat(on){
+  if(on===sweating)return;sweating=on;sweat.hidden=!on;
+  P.keepAwake(on);P.haptic(on?[40,40,40]:20);
+  if(on&&app())renderSweat(app());
+}
+P.onRender(a=>{if(sweating)renderSweat(a);});
+P.setSweat=setSweat;P.isSweating=()=>sweating;
+root.addEventListener('click',e=>{
+  if(e.target.closest('[data-swexit]')){setSweat(false);return;}
+  if(e.target.closest('[data-sweatstart]')){e.stopPropagation();setSweat(true);}
+},true);
+const prevBack=window.endzoneBack;
+window.endzoneBack=()=>{if(sweating){setSweat(false);return true;}return prevBack?prevBack():false;};
 
 function update(){const a=app();if(!a)return;try{renderBar(a);markLive(a);watchScores(a);subscribers.forEach(fn=>{try{fn(a);}catch(e){console.error('Endzone premium module',e);}});}catch(e){console.error('Endzone premium',e);}}
 window.addEventListener('endzone:render',update);

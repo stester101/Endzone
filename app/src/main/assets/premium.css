@@ -60,3 +60,17 @@ html.night #ez-compact .betidentityheading{background:transparent!important}
 #ez-compact .ez-cal-pad{display:block}
 #ez-compact .ez-cal-detail{margin-top:10px;padding:10px;border-radius:12px;background:#0c1510;font-size:12px}#ez-compact .ez-cal-detail>div{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid #1f2e26}#ez-compact .ez-cal-detail .won em{color:#2ee08a}#ez-compact .ez-cal-detail .lost em{color:#ff5c76}#ez-compact .ez-cal-detail em{font-style:normal;font-weight:800}
 #ez-compact .ez-cal-note{font-size:10px;color:#6b7f74;margin:8px 2px 0}
+
+/* Sweat mode */
+#ez-compact .ez-sweat-go{margin-left:auto;border:0;border-radius:999px;padding:6px 12px;background:#2ee08a;color:#06130c;font-weight:800;font-size:11px}
+#ez-compact .ez-sweatmode{position:absolute;inset:0;z-index:80;display:flex;flex-direction:column;background:#050a07;color:#eef5f1}
+#ez-compact .ez-sweatmode[hidden]{display:none}
+#ez-compact .ez-sw-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #1f2e26}#ez-compact .ez-sw-head small{display:block;font-size:9px;letter-spacing:1.4px;color:#8fa59a}#ez-compact .ez-sw-head b{font-size:16px}
+#ez-compact .ez-sw-head button{min-height:44px;padding:0 18px;border:0;border-radius:12px;background:#16281f;color:#eef5f1;font-weight:800}
+#ez-compact .ez-sw-list{flex:1;overflow:auto;padding:10px 12px 24px}
+#ez-compact .ez-sw-bet{margin-bottom:12px;padding:12px;border-radius:16px;background:#101b16;border:1px solid #1f2e26}
+#ez-compact .ez-sw-bet h4{display:flex;justify-content:space-between;gap:8px;margin:0 0 8px;font-size:15px}#ez-compact .ez-sw-bet h4 em{font-style:normal;color:#2ee08a;white-space:nowrap}
+#ez-compact .ez-sw-leg{display:grid;grid-template-columns:12px 1fr;gap:2px 10px;align-items:center;padding:7px 0;border-top:1px solid #1a2822;font-size:15px}
+#ez-compact .ez-sw-leg i{width:10px;height:10px;border-radius:50%;background:#ffb732}#ez-compact .ez-sw-leg.good i{background:#2ee08a}#ez-compact .ez-sw-leg.bad i{background:#ff5c76}#ez-compact .ez-sw-leg.future i{background:#6b7f74}
+#ez-compact .ez-sw-leg small{grid-column:2;font-size:11px;color:#8fa59a}
+#ez-compact .ez-sw-empty{text-align:center;color:#8fa59a;margin-top:40px}
