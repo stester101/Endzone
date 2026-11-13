@@ -83,3 +83,5 @@ html.night #ez-compact .betidentityheading{background:transparent!important}
 #ez-compact .ez-sweat-go{min-height:36px}
 #ez-compact .ez-sw-leg.future>span,#ez-compact .ez-sw-leg>small{color:#b6c6bd!important}
 #ez-compact .ez-sw-leg.future>span{color:#c9d6cf!important}
+
+#ez-compact .endzone-brand:focus-visible{outline:2px solid #ffb732;outline-offset:3px;border-radius:8px}

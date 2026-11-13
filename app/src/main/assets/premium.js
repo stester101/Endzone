@@ -103,6 +103,8 @@ function watchScores(a){
 }
 
 /* ---------- Theme toggle: tap the Endzone logo ---------- */
+const brandEl=root.querySelector('.endzone-brand');
+if(brandEl){brandEl.setAttribute('role','button');brandEl.setAttribute('tabindex','0');brandEl.setAttribute('aria-label','Switch between night and light theme');brandEl.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();brandEl.click();}});}
 root.addEventListener('click',e=>{
   if(!e.target.closest('.endzone-brand'))return;
   theme=theme==='night'?'light':'night';
@@ -258,6 +260,7 @@ function renderSweat(a){
 }
 function setSweat(on){
   if(on===sweating)return;sweating=on;sweat.hidden=!on;
+  [...sweat.parentElement.children].forEach(el=>{if(el!==sweat&&el!==toast)el.inert=on;});
   P.keepAwake(on);P.haptic(on?[40,40,40]:20);
   if(on&&app())renderSweat(app());
   if(on)setTimeout(()=>sweat.querySelector('[data-swexit]')?.focus(),50);
