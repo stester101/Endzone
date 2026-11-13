@@ -79,3 +79,7 @@ html.night #ez-compact .betidentityheading{background:transparent!important}
 
 #ez-compact .ez-cal-empty{margin:10px 2px 0;padding:10px;border-radius:12px;background:#0c1510;color:#8fa59a;font-size:12px;text-align:center}
 #ez-compact .ez-cal-day:focus-visible,#ez-compact .ez-sweatmode button:focus-visible,#ez-compact .ez-sweat-go:focus-visible,#ez-compact .ez-share:focus-visible{outline:2px solid #ffb732;outline-offset:2px}
+
+#ez-compact .ez-sweat-go{min-height:36px}
+#ez-compact .ez-sw-leg.future>span,#ez-compact .ez-sw-leg>small{color:#b6c6bd!important}
+#ez-compact .ez-sw-leg.future>span{color:#c9d6cf!important}
