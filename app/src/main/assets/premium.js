@@ -105,7 +105,7 @@ function watchScores(a){
 /* ---------- Theme toggle: tap the Endzone logo ---------- */
 function wireBrand(){const brandEl=root.querySelector('.endzone-brand');
 if(brandEl&&!brandEl.hasAttribute('role')){brandEl.setAttribute('role','button');brandEl.setAttribute('tabindex','0');brandEl.setAttribute('aria-label','Switch between night and light theme');brandEl.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();brandEl.click();}});}}
-wireBrand();P.onRender(wireBrand);
+wireBrand();window.addEventListener('endzone:render',wireBrand);
 root.addEventListener('click',e=>{
   if(!e.target.closest('.endzone-brand'))return;
   theme=theme==='night'?'light':'night';
