@@ -11,6 +11,7 @@ import android.graphics.Color;
 
 public class MainActivity extends Activity {
  private WebView web;
+ private android.webkit.ValueCallback<android.net.Uri[]> filePick;
 
  @Override public void onCreate(Bundle state) {
   super.onCreate(state);
@@ -25,6 +26,18 @@ public class MainActivity extends Activity {
   web.addJavascriptInterface(new Bridge(),"EndzoneNative");
   web.setWebViewClient(new WebViewClient(){
    @Override public boolean shouldOverrideUrlLoading(WebView v, android.webkit.WebResourceRequest request){ return true; }
+  });
+  web.setWebChromeClient(new android.webkit.WebChromeClient(){
+   @Override public boolean onShowFileChooser(WebView v, android.webkit.ValueCallback<android.net.Uri[]> cb, FileChooserParams params){
+    if(filePick!=null)filePick.onReceiveValue(null);
+    filePick=cb;
+    try{
+     android.content.Intent i=new android.content.Intent(android.content.Intent.ACTION_GET_CONTENT);
+     i.addCategory(android.content.Intent.CATEGORY_OPENABLE);i.setType("*/*");
+     startActivityForResult(android.content.Intent.createChooser(i,"Choose backup"),77);
+    }catch(Exception e){filePick=null;cb.onReceiveValue(null);return false;}
+    return true;
+   }
   });
   android.widget.FrameLayout container=new android.widget.FrameLayout(this);
   container.addView(web,new android.widget.FrameLayout.LayoutParams(-1,-1));
@@ -62,8 +75,18 @@ public class MainActivity extends Activity {
    html=html.replace("<link rel=\"stylesheet\" href=\"night.css\">","<style>"+asset("night.css")+"</style>");
    html=html.replace("<link rel=\"stylesheet\" href=\"premium.css\">","<style>"+asset("premium.css")+"</style>");
    html=html.replace("<script src=\"premium.js\"></script>","<script>"+asset("premium.js")+"</script>");
+   html=html.replace("<link rel=\"stylesheet\" href=\"sprig.css\">","<style>"+asset("sprig.css")+"</style>");
    web.loadDataWithBaseURL("https://endzone.local/",html,"text/html","UTF-8",null);
   }catch(java.io.IOException e){throw new IllegalStateException("Cannot load Endzone",e);}
+ }
+
+
+ @Override protected void onActivityResult(int code,int result,android.content.Intent data){
+  if(code==77&&filePick!=null){
+   android.net.Uri[] r=(result==RESULT_OK&&data!=null&&data.getData()!=null)?new android.net.Uri[]{data.getData()}:null;
+   filePick.onReceiveValue(r);filePick=null;return;
+  }
+  super.onActivityResult(code,result,data);
  }
 
  /* Native bridge for premium.js (window.EndzoneNative). Every method is optional on the JS side; premium.js falls back to web APIs. */
