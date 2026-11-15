@@ -45,8 +45,6 @@ console.log('Premium shared API validated');
 assert(fs.readFileSync('app/src/main/assets/premium.js','utf8').includes('shareBet'),'Share slip missing');
 console.log('Share slip validated');
 
-assert(fs.readFileSync('app/src/main/assets/premium.js','utf8').includes('calendarHtml'),'Stats calendar missing');
-console.log('Stats calendar validated');
 
 assert(fs.readFileSync('app/src/main/assets/premium.js','utf8').includes('setSweat'),'Sweat mode missing');
 console.log('Sweat mode validated');

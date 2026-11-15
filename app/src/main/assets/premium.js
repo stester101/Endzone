@@ -115,7 +115,7 @@ root.addEventListener('click',e=>{
 });
 
 /* ---------- Shared API (window.EndzonePremium) ----------
-   Used by share slip, Stats calendar and sweat mode. Native calls fall back to web APIs when the APK bridge is absent. */
+   Used by share slip and sweat mode. Native calls fall back to web APIs when the APK bridge is absent. */
 const native=()=>window.EndzoneNative||null;
 function haptic(pattern){
   const p=Array.isArray(pattern)?pattern:[pattern];
@@ -131,13 +131,6 @@ const legLabel=l=>{try{return EndzoneMarkets.label(l);}catch(e){return l.name||l
 const legGame=(a,l)=>{try{return a.game(l.game);}catch(e){return null;}};
 const legWho=(a,l)=>{const g=legGame(a,l);return g?(l.side==='away'?g.a:l.side==='home'?g.h:''):'';};
 const legTitle=(a,l)=>{const g=legGame(a,l),w=legWho(a,l);return (g&&g.a&&g.h?g.a+' @ '+g.h+' · ':'')+(w?w+' ':'')+legLabel(l);};
-/* A bet counts as settled on the last kickoff among its legs (the app stores no settle date). */
-function settledDay(a,b){
-  const t=Math.max(0,...b.legs.map(l=>num(legGame(a,l)?.time)));
-  return new Date(t||num(b.addedAt)||Date.now());
-}
-const dayKey=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');};
-function profit(a,b){return b.state==='won'?num(a.returnOf(b))-num(b.stake):b.state==='lost'?-num(b.stake):0;}
 function slipText(a,b){
   const stateWord={open:'Open',won:'WON',lost:'LOST'}[b.state]||b.state;
   const lines=[`${b.name||'Bet'} · ${stateWord}`,...b.legs.map(l=>'• '+legTitle(a,l))];
@@ -157,7 +150,7 @@ async function share(title,text,pngBase64){
   return 'failed';
 }
 const subscribers=new Set();
-window.EndzonePremium={version:1,fmt:{money,signed,esc},native,haptic,keepAwake,toast:t=>say(t),share,slipText,legLabel,legTitle,legWho:l=>legWho(app(),l),legClass:(l)=>legClass(app(),l),settledDay,dayKey,profit,onRender:fn=>{subscribers.add(fn);return()=>subscribers.delete(fn);},root};
+window.EndzonePremium={version:1,fmt:{money,signed,esc},native,haptic,keepAwake,toast:t=>say(t),share,slipText,legLabel,legTitle,legWho:l=>legWho(app(),l),legClass:(l)=>legClass(app(),l),onRender:fn=>{subscribers.add(fn);return()=>subscribers.delete(fn);},root};
 
 /* ---------- Share slip ---------- */
 const P=window.EndzonePremium;
@@ -206,44 +199,67 @@ function injectShare(){
 root.addEventListener('click',e=>{const b=e.target.closest('[data-sharebet]');if(!b)return;e.preventDefault();e.stopPropagation();shareBet(Number(b.dataset.sharebet));},true);
 P.onRender(injectShare);
 
-/* ---------- Stats calendar (profit/loss by day) ---------- */
-let calMonth=null,calDay=null;
-const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
-function calendarHtml(a){
-  const settled=a.bets().filter(b=>b.state==='won'||b.state==='lost');
-  const days=new Map();
-  settled.forEach(b=>{const k=P.dayKey(P.settledDay(a,b));const d=days.get(k)||{pnl:0,bets:[]};d.pnl+=P.profit(a,b);d.bets.push(b);days.set(k,d);});
-  const now=new Date();if(!calMonth)calMonth=new Date(now.getFullYear(),now.getMonth(),1);
-  const y=calMonth.getFullYear(),m=calMonth.getMonth(),first=new Date(y,m,1),count=new Date(y,m+1,0).getDate();
-  const lead=(first.getDay()+6)%7;let monthPnl=0,w=0,l=0;
-  for(let d=1;d<=count;d++){const e=days.get(P.dayKey(new Date(y,m,d)));if(e){monthPnl+=e.pnl;e.bets.forEach(b=>b.state==='won'?w++:l++);}}
-  let cells='';
-  for(let i=0;i<lead;i++)cells+='<i class="ez-cal-pad"></i>';
-  for(let d=1;d<=count;d++){
-    const k=P.dayKey(new Date(y,m,d)),e=days.get(k),cls=!e?'':e.pnl>0?'pos':e.pnl<0?'neg':'flat';
-    const today=k===P.dayKey(now)?' today':'',sel=calDay===k?' sel':'';
-    cells+=e?`<button class="ez-cal-day ${cls}${today}${sel}" data-calday="${k}" aria-pressed="${calDay===k}" aria-label="${d} ${MONTHS[m]}, ${P.fmt.signed(e.pnl)}, ${e.bets.length} bet${e.bets.length>1?'s':''}"><span>${d}</span><b>${P.fmt.signed(e.pnl).replace('£','')}</b></button>`:`<div class="ez-cal-day empty${today}"><span>${d}</span></div>`;
-  }
-  const sel=calDay&&days.get(calDay);
-  const detail=sel?`<div class="ez-cal-detail"><b>${esc(new Date(calDay+'T12:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}))} · ${P.fmt.signed(sel.pnl)}</b>${sel.bets.map(b=>`<div class="${b.state}"><span>${esc(b.name||'Bet')}</span><em>${P.fmt.signed(P.profit(a,b))}</em></div>`).join('')}</div>`:'';
-  return `<section class="ez-cal"><div class="ez-cal-head"><button data-calnav="-1" aria-label="Previous month">‹</button><div><small>PROFIT &amp; LOSS</small><h3>${MONTHS[m]} ${y}</h3></div><button data-calnav="1" aria-label="Next month">›</button></div>
-<div class="ez-cal-sum"><span class="${monthPnl>0?'pos':monthPnl<0?'neg':''}">${P.fmt.signed(monthPnl)}</span><span>${w} won · ${l} lost</span></div>
-<div class="ez-cal-grid" role="group" aria-label="Daily profit and loss">${['M','T','W','T','F','S','S'].map(x=>`<small>${x}</small>`).join('')}${cells}</div>${detail}${settled.length?'':'<p class="ez-cal-empty">No settled bets yet. Won and lost bets will colour this calendar.</p>'}<p class="ez-cal-note">Days use each bet's last kickoff. Lost stakes count as negative; pushes are not tracked.</p></section>`;
+/* ---------- Updated label, bet status chips, backup ---------- */
+function updatedText(){
+  let t=0;try{t=JSON.parse(localStorage.getItem('endzone-espn-cache')||'null')?.updatedAt||0;}catch(e){}
+  if(!t)return 'NFL · ESPN';
+  const m=Math.floor(Math.max(0,Date.now()-t)/60000);
+  return 'Updated '+(m<1?'now':m<60?m+'m ago':Math.floor(m/60)+'h ago');
 }
-function injectCalendar(a){
-  const st=root.querySelector('.stats');if(!st||st.hidden)return;
-  if(st.querySelector('.ez-cal'))return;
-  st.insertAdjacentHTML('afterbegin',calendarHtml(a));
+function tickUpdated(){const el=root.querySelector('.headtools small');if(el){const x=updatedText();if(el.textContent!==x)el.textContent=x;}}
+P.onRender(tickUpdated);
+setInterval(tickUpdated,15000);
+
+const CHIPS=['All','Open','Won','Lost'];
+function injectChips(a){
+  const bets=root.querySelector('.bets');
+  if(!bets||bets.hidden||a.view()!=='bets'||!a.setBetStatus)return;
+  const cur=a.betStatus();
+  let row=bets.querySelector('.ez-chips');
+  const count=k=>k==='All'?a.bets().length:a.bets().filter(b=>b.state===k.toLowerCase()).length;
+  const markup=CHIPS.map(k=>`<button class="ez-chip${cur===k?' on':''}" data-ezchip="${k}" aria-pressed="${cur===k}">${k}<em>${count(k)}</em></button>`).join('');
+  if(!row){row=document.createElement('div');row.className='ez-chips';row.setAttribute('role','group');row.setAttribute('aria-label','Bet status');bets.prepend(row);}
+  if(row.dataset.sig!==markup){row.innerHTML=markup;row.dataset.sig=markup;}
 }
 root.addEventListener('click',e=>{
-  const nav=e.target.closest('[data-calnav]'),day=e.target.closest('[data-calday]');
-  if(!nav&&!day)return;
-  if(nav){calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()+Number(nav.dataset.calnav),1);calDay=null;}
-  else calDay=calDay===day.dataset.calday?null:day.dataset.calday;
-  const cal=root.querySelector('.stats .ez-cal');if(cal&&app())cal.outerHTML=calendarHtml(app());
-  P.haptic(15);
-});
-P.onRender(injectCalendar);
+  const c=e.target.closest('[data-ezchip]');if(!c)return;
+  e.preventDefault();e.stopPropagation();
+  const a=app();if(a&&a.setBetStatus){a.setBetStatus(c.dataset.ezchip);P.haptic(10);}
+},true);
+P.onRender(injectChips);
+
+function injectBackup(){
+  const body=root.querySelector('.optionbody'),opts=root.querySelector('.options');
+  if(!body||!opts||opts.dataset.type!=='settings'||body.querySelector('.ez-backup'))return;
+  body.insertAdjacentHTML('beforeend','<div class="optiongroup ez-backup"><small>Backup</small><button data-ezbackup="copy">Copy my bets</button><button data-ezbackup="restore">Restore from paste</button><textarea class="ez-backup-text" rows="3" placeholder="Paste a backup here" hidden aria-label="Backup text"></textarea><p class="ez-backup-note">Copy before you reinstall. Restore replaces your saved bets.</p></div>');
+}
+new MutationObserver(injectBackup).observe(root,{childList:true,subtree:true});
+let armed=false;
+root.addEventListener('click',async e=>{
+  const b=e.target.closest('[data-ezbackup]');if(!b)return;
+  e.preventDefault();e.stopPropagation();
+  const box=root.querySelector('.ez-backup-text'),note=root.querySelector('.ez-backup-note');
+  if(b.dataset.ezbackup==='copy'){
+    try{
+      const saved=JSON.parse(localStorage.getItem('endzone-v1')||'{}');
+      const text=JSON.stringify({endzoneBackup:1,at:new Date().toISOString(),bets:saved.bets||[]});
+      await navigator.clipboard.writeText(text);
+      b.textContent='Copied';note.textContent=(saved.bets||[]).length+' bets copied.';
+      setTimeout(()=>{b.textContent='Copy my bets';},2200);
+    }catch(err){note.textContent='Could not copy. Try again.';}
+    return;
+  }
+  if(box.hidden){box.hidden=false;box.focus();note.textContent='Paste your backup, then tap Restore again.';return;}
+  try{
+    const data=JSON.parse(box.value);
+    if(!data||data.endzoneBackup!==1||!Array.isArray(data.bets))throw 0;
+    if(!armed){armed=true;b.textContent='Tap again to replace '+(app()?app().bets().length:0)+' bets';setTimeout(()=>{armed=false;b.textContent='Restore from paste';},4000);return;}
+    const saved=JSON.parse(localStorage.getItem('endzone-v1')||'{}');
+    saved.bets=data.bets;
+    localStorage.setItem('endzone-v1',JSON.stringify(saved));
+    location.reload();
+  }catch(err){note.textContent='That is not an Endzone backup.';}
+},true);
 
 /* ---------- Sweat mode (full-screen live view of open bets, screen kept awake) ---------- */
 const sweat=document.createElement('div');
