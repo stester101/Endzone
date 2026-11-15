@@ -228,38 +228,58 @@ root.addEventListener('click',e=>{
 },true);
 P.onRender(injectChips);
 
+const LAST_KEY='endzone-last-backup',MSG_KEY='endzone-import-msg';
+const betKey=b=>b.addedAt?'t'+b.addedAt:'l'+JSON.stringify([b.name,b.legs]);
+const betTime=b=>Math.max(num(b.editedAt),num(b.addedAt));
+const lastText=()=>{let t=0;try{t=Number(localStorage.getItem(LAST_KEY))||0;}catch(e){}return t?'Last backed up '+new Date(t).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'Not backed up yet';};
+function mergeBets(mine,theirs){
+  const map=new Map(mine.map(b=>[betKey(b),b]));let added=0,updated=0;
+  theirs.forEach(b=>{if(!b||!Array.isArray(b.legs))return;const k=betKey(b),m=map.get(k);
+    if(!m){map.set(k,b);added++;}else if(betTime(b)>betTime(m)){map.set(k,b);updated++;}});
+  return {bets:[...map.values()],added,updated};
+}
+function importText(text){
+  const data=JSON.parse(text);
+  if(!data||data.endzoneBackup!==1||!Array.isArray(data.bets))throw new Error('bad');
+  const saved=JSON.parse(localStorage.getItem('endzone-v1')||'{}');
+  const r=mergeBets(saved.bets||[],data.bets);
+  saved.bets=r.bets;localStorage.setItem('endzone-v1',JSON.stringify(saved));
+  localStorage.setItem(MSG_KEY,r.added+' added, '+r.updated+' updated');
+  location.reload();
+}
 function injectBackup(){
   const body=root.querySelector('.optionbody'),opts=root.querySelector('.options');
   if(!body||!opts||opts.dataset.type!=='settings'||body.querySelector('.ez-backup'))return;
-  body.insertAdjacentHTML('beforeend','<div class="optiongroup ez-backup"><small>Backup</small><button data-ezbackup="copy">Copy my bets</button><button data-ezbackup="restore">Restore from paste</button><button data-eztour="1">Replay tour</button><textarea class="ez-backup-text" rows="3" placeholder="Paste a backup here" hidden aria-label="Backup text"></textarea><p class="ez-backup-note">Copy before you reinstall. Restore replaces your saved bets.</p></div>');
+  body.insertAdjacentHTML('beforeend',`<div class="optiongroup ez-backup"><small>Move your bets</small><p class="ez-backup-note ez-backup-last">${esc(lastText())}</p><button data-ezbackup="export">Export bets</button><label class="ez-file">Import file<input type="file" accept=".json,application/json" data-ezfile hidden></label><button data-ezbackup="paste">Import from paste</button><textarea class="ez-backup-text" rows="3" placeholder="Paste exported text here" hidden aria-label="Exported bets text"></textarea><p class="ez-backup-note ez-backup-msg">Export, save the file to your drive, then import it on the other device. Imports merge: no duplicates, newest edit wins. Deletes do not carry over.</p><button data-eztour="1">Replay tour</button></div>`);
 }
 new MutationObserver(injectBackup).observe(root,{childList:true,subtree:true});
-let armed=false;
+const say2=t=>{const m=root.querySelector('.ez-backup-msg');if(m)m.textContent=t;};
+root.addEventListener('change',e=>{
+  const f=e.target.closest('[data-ezfile]');if(!f||!f.files[0])return;
+  f.files[0].text().then(importText).catch(()=>say2('That is not an Endzone export.'));
+},true);
 root.addEventListener('click',async e=>{
   const b=e.target.closest('[data-ezbackup]');if(!b)return;
   e.preventDefault();e.stopPropagation();
-  const box=root.querySelector('.ez-backup-text'),note=root.querySelector('.ez-backup-note');
-  if(b.dataset.ezbackup==='copy'){
+  if(b.dataset.ezbackup==='export'){
     try{
       const saved=JSON.parse(localStorage.getItem('endzone-v1')||'{}');
       const text=JSON.stringify({endzoneBackup:1,at:new Date().toISOString(),bets:saved.bets||[]});
-      await navigator.clipboard.writeText(text);
-      b.textContent='Copied';note.textContent=(saved.bets||[]).length+' bets copied.';
-      setTimeout(()=>{b.textContent='Copy my bets';},2200);
-    }catch(err){note.textContent='Could not copy. Try again.';}
+      const stamp=new Date().toISOString().slice(0,10),name='endzone-bets-'+stamp+'.json';
+      let done=false;
+      const n=native();
+      if(n&&n.shareText){n.shareText(name,text);done=true;}
+      else{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();a.remove();done=true;}
+      try{await navigator.clipboard.writeText(text);}catch(err){}
+      if(done){localStorage.setItem(LAST_KEY,String(Date.now()));const l=root.querySelector('.ez-backup-last');if(l)l.textContent=lastText();say2((saved.bets||[]).length+' bets exported. Save the file or text to your drive.');}
+    }catch(err){say2('Could not export. Try again.');}
     return;
   }
-  if(box.hidden){box.hidden=false;box.focus();note.textContent='Paste your backup, then tap Restore again.';return;}
-  try{
-    const data=JSON.parse(box.value);
-    if(!data||data.endzoneBackup!==1||!Array.isArray(data.bets))throw 0;
-    if(!armed){armed=true;b.textContent='Tap again to replace '+(app()?app().bets().length:0)+' bets';setTimeout(()=>{armed=false;b.textContent='Restore from paste';},4000);return;}
-    const saved=JSON.parse(localStorage.getItem('endzone-v1')||'{}');
-    saved.bets=data.bets;
-    localStorage.setItem('endzone-v1',JSON.stringify(saved));
-    location.reload();
-  }catch(err){note.textContent='That is not an Endzone backup.';}
+  const box=root.querySelector('.ez-backup-text');
+  if(box.hidden){box.hidden=false;box.focus();say2('Paste the exported text, then tap Import from paste again.');return;}
+  try{importText(box.value);}catch(err){say2('That is not an Endzone export.');}
 },true);
+setTimeout(()=>{try{const m=localStorage.getItem(MSG_KEY);if(m){localStorage.removeItem(MSG_KEY);say({title:'Bets imported',text:m,tone:'good',ms:3500});}}catch(e){}},900);
 
 /* ---------- Tour (first launch, replay from Settings) ---------- */
 const TOUR_KEY='endzone-tour-v1';
@@ -268,7 +288,7 @@ const STEPS=[
   ['Sweat mode','Full-screen live view of your open bets. The screen stays awake.'],
   ['Filter your bets','Use the Open, Won and Lost chips on Bets. The numbers show how many.'],
   ['Duplicate or share','Open a bet to duplicate it or share a slip picture.'],
-  ['Back up your bets','Settings has Copy my bets. Do it before you reinstall. You can replay this tour there.']
+  ['Move your bets','Settings > Export bets saves them to a file. Import it on another device to merge. Replay this tour there.']
 ];
 let tourEl=null,tourI=0,tourPrev=null;
 function tourDone(){try{localStorage.setItem(TOUR_KEY,'1');}catch(e){}if(tourEl){tourEl.remove();tourEl=null;}try{tourPrev&&tourPrev.focus&&tourPrev.focus();}catch(e){}}

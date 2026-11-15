@@ -81,3 +81,4 @@ html #ez-compact .ledgercard:active{transform:scale(.985)}
 .ez-tour-skip{background:transparent;color:var(--muted)}
 .ez-tour-next{background:var(--primary);color:var(--on-primary);min-width:110px}
 @keyframes eztour{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+.ez-file{display:inline-flex;align-items:center;min-height:40px;padding:0 14px;margin:4px 6px 0 0;border-radius:10px;background:var(--soft);color:var(--on-soft);font:600 14px/20px system-ui,sans-serif}
