@@ -65,3 +65,19 @@ html #ez-compact .ledgercard:active{transform:scale(.985)}
   html #ez-compact .betactions button:hover,html #ez-compact .ez-chip:hover{box-shadow:0 0 0 1px var(--primary)}
 }
 @media (prefers-reduced-motion:reduce){html #ez-compact *{transition:none!important;animation:none!important}.ez-chip{transition:none}}
+
+/* Tour */
+.ez-tour{position:absolute;inset:0;z-index:120;display:flex;align-items:flex-end;justify-content:center;padding:16px;background:rgba(20,25,20,.55)}
+.ez-tour-card{width:100%;box-sizing:border-box;padding:20px;border-radius:16px;background:var(--surface);color:var(--text);box-shadow:var(--sh-lg);animation:eztour .45s var(--spring)}
+.ez-tour-card small{font:500 12px/16px ui-monospace,"DM Mono",monospace;letter-spacing:.04em;color:var(--primary)}
+.ez-tour-card h3{margin:6px 0 4px;font:500 20px/26px system-ui,sans-serif}
+.ez-tour-card p{margin:0 0 16px;font-size:16px;line-height:24px;color:var(--muted)}
+.ez-tour-dots{display:flex;gap:6px;margin-bottom:16px}
+.ez-tour-dots i{height:6px;width:6px;border-radius:999px;background:var(--line);transition:width .4s var(--spring),background .6s var(--smooth)}
+.ez-tour-dots i.on{width:22px;background:var(--primary)}
+.ez-tour-row{display:flex;justify-content:space-between;gap:10px}
+.ez-tour-row button{min-height:44px;padding:0 20px;border-radius:10px;border:0;font:600 14px/20px system-ui,sans-serif;transition:transform .4s var(--spring)}
+.ez-tour-row button:active{transform:scale(.95)}
+.ez-tour-skip{background:transparent;color:var(--muted)}
+.ez-tour-next{background:var(--primary);color:var(--on-primary);min-width:110px}
+@keyframes eztour{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}

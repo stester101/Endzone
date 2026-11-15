@@ -231,7 +231,7 @@ P.onRender(injectChips);
 function injectBackup(){
   const body=root.querySelector('.optionbody'),opts=root.querySelector('.options');
   if(!body||!opts||opts.dataset.type!=='settings'||body.querySelector('.ez-backup'))return;
-  body.insertAdjacentHTML('beforeend','<div class="optiongroup ez-backup"><small>Backup</small><button data-ezbackup="copy">Copy my bets</button><button data-ezbackup="restore">Restore from paste</button><textarea class="ez-backup-text" rows="3" placeholder="Paste a backup here" hidden aria-label="Backup text"></textarea><p class="ez-backup-note">Copy before you reinstall. Restore replaces your saved bets.</p></div>');
+  body.insertAdjacentHTML('beforeend','<div class="optiongroup ez-backup"><small>Backup</small><button data-ezbackup="copy">Copy my bets</button><button data-ezbackup="restore">Restore from paste</button><button data-eztour="1">Replay tour</button><textarea class="ez-backup-text" rows="3" placeholder="Paste a backup here" hidden aria-label="Backup text"></textarea><p class="ez-backup-note">Copy before you reinstall. Restore replaces your saved bets.</p></div>');
 }
 new MutationObserver(injectBackup).observe(root,{childList:true,subtree:true});
 let armed=false;
@@ -260,6 +260,38 @@ root.addEventListener('click',async e=>{
     location.reload();
   }catch(err){note.textContent='That is not an Endzone backup.';}
 },true);
+
+/* ---------- Tour (first launch, replay from Settings) ---------- */
+const TOUR_KEY='endzone-tour-v1';
+const STEPS=[
+  ['Your action bar','In play, to return and 7-day profit sit at the top. Tap it to open Bets.'],
+  ['Sweat mode','Full-screen live view of your open bets. The screen stays awake.'],
+  ['Filter your bets','Use the Open, Won and Lost chips on Bets. The numbers show how many.'],
+  ['Duplicate or share','Open a bet to duplicate it or share a slip picture.'],
+  ['Back up your bets','Settings has Copy my bets. Do it before you reinstall. You can replay this tour there.']
+];
+let tourEl=null,tourI=0,tourPrev=null;
+function tourDone(){try{localStorage.setItem(TOUR_KEY,'1');}catch(e){}if(tourEl){tourEl.remove();tourEl=null;}try{tourPrev&&tourPrev.focus&&tourPrev.focus();}catch(e){}}
+function tourDraw(){
+  const [t,d]=STEPS[tourI],last=tourI===STEPS.length-1;
+  tourEl.innerHTML=`<div class="ez-tour-card"><small>What's new · ${tourI+1} of ${STEPS.length}</small><h3 id="ez-tour-title">${esc(t)}</h3><p>${esc(d)}</p><div class="ez-tour-dots" aria-hidden="true">${STEPS.map((_,i)=>`<i class="${i===tourI?'on':''}"></i>`).join('')}</div><div class="ez-tour-row"><button class="ez-tour-skip" data-tour="skip">Skip</button><button class="ez-tour-next" data-tour="next">${last?'Done':'Next'}</button></div></div>`;
+  tourEl.querySelector('.ez-tour-next').focus();
+}
+function startTour(){
+  if(tourEl)return;
+  tourPrev=document.activeElement;tourI=0;
+  tourEl=document.createElement('div');tourEl.className='ez-tour';tourEl.setAttribute('role','dialog');tourEl.setAttribute('aria-modal','true');tourEl.setAttribute('aria-labelledby','ez-tour-title');
+  root.appendChild(tourEl);tourDraw();
+}
+root.addEventListener('click',e=>{
+  const b=e.target.closest('[data-tour],[data-eztour]');if(!b)return;
+  e.preventDefault();e.stopPropagation();
+  if(b.dataset.eztour){const o=root.querySelector('.options');if(o)o.hidden=true;startTour();return;}
+  if(b.dataset.tour==='skip'||tourI>=STEPS.length-1){tourDone();return;}
+  tourI++;tourDraw();P.haptic(10);
+},true);
+document.addEventListener('keydown',e=>{if(tourEl&&e.key==='Escape')tourDone();});
+setTimeout(()=>{let seen=null;try{seen=localStorage.getItem(TOUR_KEY);}catch(e){seen='1';}if(!seen&&!root.querySelector('.ez-sweatmode:not([hidden])'))startTour();},1500);
 
 /* ---------- Sweat mode (full-screen live view of open bets, screen kept awake) ---------- */
 const sweat=document.createElement('div');
